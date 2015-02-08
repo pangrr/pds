@@ -1,0 +1,34 @@
+Execute the Makefile to compile four programs.
+
+The command to execute a program is:
+    ./<program_name> -f <data_file_name> -p <number_of_threads>
+    -i <number_of_iterations>
+
+The elinimated matrix will be written into a new file with a similar name to the
+name of the program. The print out is the average time in seconds to perform a
+Gaussian Elimination per iteration.
+
+To compare the result of two eliminated matrices written in two files use:
+    ./cmpfile.o <file1_name> <file2_name>
+which simply tell if two files have identical content.
+
+
+Program Files:
+    gauss_pthread_block_v1.cpp
+    gauss_pthread_block_v2.cpp
+    gauss_pthread_cyclic_v1.cpp
+    gauss_pthread_cyclic_v2.cpp
+    hrtimer_x86.c
+    hrtimer_x86.h
+    cmpfile.cpp
+    
+Data Files:
+    jpwh_991.dat
+    orsreg_1.dat
+    sherman3.dat
+    saylr4.dat
+
+Other Filse: 
+    Makefile
+    README
+    report.pdf
