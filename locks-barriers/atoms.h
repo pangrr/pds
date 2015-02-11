@@ -3,8 +3,8 @@
 // http://www.cs.rochester.edu/research/synchronization/rstm/
 
 
-#ifndef LOCKS_H__
-#define LOCKS_H__
+#ifndef ATOMS_H__
+#define ATOMS_H__
 
 #if defined(__i386__) && defined(__GNUC__)
 
@@ -329,8 +329,7 @@ static inline void nop()
 #error Your CPU/compiler combination is not supported
 #endif
 
-static inline bool
-bool_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
+static inline bool bool_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 {
     return cas(ptr, old, _new) == old;
 }
@@ -380,122 +379,8 @@ static inline void spin128()
         nop();
 }
 
-////////////////////////////////////////
-// tatas lock with backoff
-
-typedef volatile unsigned long tatasbf_lock_t;
-
-static inline void tatasbf_acquire_slowpath(tatasbf_lock_t* L)
-{
-    int b = 64;
-
-    do
-    {
-        backoff(&b);
-    }
-    while (tas(L));
-}
-
-static inline void tatasbf_acquire(tatasbf_lock_t* L)
-{
-    if (tas(L))
-        tatasbf_acquire_slowpath(L);
-}
-
-static inline void tatasbf_release(tatasbf_lock_t* L)
-{
-    *L = 0;
-}
-
-////////////////////////////////////////
-// tatas lock
-
-typedef volatile unsigned long tatas_lock_t;
-
-static inline void tatas_acquire(tatas_lock_t* L)
-{
-    do {
-        while (*L) {}
-    } while (tas(L))
-}
-
-static inline void tatas_release(tatas_lock_t* L)
-{
-    *L = 0;
-}
-
-////////////////////////////////////////
-// tas lock
 
 
-typedef volatile unsigned long tas_lock_t;
 
-static inline void tas_acquire(tas_lock_t* L)
-{
-    while (tas(L)) {}
-}
 
-static inline void tas_release(tas_lock_t* L)
-{
-    *L = 0;
-}
-
-////////////////////////////////////////
-// ticket lock
-
-extern "C"
-{
-    typedef struct
-    {
-        volatile unsigned long next_ticket;
-        volatile unsigned long now_serving;
-    } ticket_lock_t;
-}
-
-static inline void ticket_acquire(ticket_lock_t* L)
-{
-    unsigned long my_ticket = fai(&L->next_ticket);
-    while (L->now_serving != my_ticket);
-}
-
-static inline void ticket_release(ticket_lock_t* L)
-{
-    L->now_serving += 1;
-}
-
-////////////////////////////////////////
-// MCS lock
-
-extern "C"
-{
-    typedef volatile struct _mcs_qnode_t
-    {
-        bool flag;
-        volatile struct _mcs_qnode_t* next;
-    } mcs_qnode_t;
-}
-
-static inline void mcs_acquire(mcs_qnode_t** L, mcs_qnode_t* I)
-{
-    I->next = 0;
-    mcs_qnode_t* pred =
-        (mcs_qnode_t*)swap((volatile unsigned long*)L, (unsigned long)I); // L->next = I, return old L->next
-
-    if (pred != 0) { // queue not empty, lock unavailable
-        I->flag = true; 
-        pred->next = I; // append to queue
-        while (I->flag) { } // spin
-    }
-}
-
-static inline void mcs_release(mcs_qnode_t** L, mcs_qnode_t* I)
-{
-    if (I->next == 0) {
-        if (bool_cas((volatile unsigned long*)L, (unsigned long)I, 0))
-            return;
-        while (I->next == 0) { } // spin
-    }
-    I->next->flag = false;
-}
-
-#endif // LOCKS_H__
+#endif // ATOMS_H__

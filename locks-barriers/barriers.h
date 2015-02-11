@@ -1,51 +1,102 @@
 #ifndef BARRIERS_H__
 #define BARRIERS_H__
 
-#define DEFAULT_NTHREADS 4
-int nthreads = DEFAULT_NTHREADS;
+#include <math.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "atoms.h" // atomic operations
+
+// thread local sense
+typedef struct tid_sense_struct
+{
+    bool sense;
+    int tid;
+} tid_sense_t;
+
+tid_sense_t* tid_sense_init (int n_thread);
 
 
 /////////////////////////////////////
 // centralized sense-reversing barrier
 
-void csbarrier(int tid)
-{
-    static volatile unsigned long count = 0;
-    static volatile unsigned int sense = 0;
-    static volatile unsigned int thread_sense[MAX_THREADS] = {0};
+#define CS "cs"
 
-    thread_sense[tid] = !thread_sense[tid]; // toggle local sense
-    if (fai(&count) == nthreads-1) { // last thread
-        count = 0; // reset count
-        sense = !sense; // toggle global sense
-    } else {
-        while (sense != thread_sense[tid]); // spin
-    }
-}
+typedef struct cs_barrier_struct
+{
+    unsigned long arrived;
+    bool sense;
+    int n_thread;
+} cs_barrier_t;
+
+cs_barrier_t* cs_barrier_init (int n_thread);
+
+void cs_barrier_wait (cs_barrier_t *barrier, bool *local_sense);
+
+
+
+
+
+
+
+//////////////////////////////////////
+// tournament barrier
+
+#define TOURNAMENT "tournament"
+
+#define WINNER 0
+#define LOSER 1
+#define BYE 2
+#define CHAMPION 3
+#define DROPOUT 4
+#define DEFAULT -1
+
+typedef struct round_struct 
+{
+	int role;
+	bool *opponent;
+	bool flag;
+} round_t;
+
+typedef struct tournament_barrier_struct
+{
+    round_t **array;
+    bool opponent_default;
+    int n_round;
+} tournament_barrier_t;
+
+
+tournament_barrier_t* tournament_barrier_init (int n_thread); 
+
+void tournament_barrier_wait (tournament_barrier_t *barrier, int tid, bool *sense); 
+
+
+
+
+
+
 
 ///////////////////////////////////////////
 // pthread-based condition synchronization
 // Extracted from sor_pthread.c
 
-//pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
-//pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-void barrier (int expect)
+#define PTHREAD "pthread"
+
+typedef struct pthreadbase_barrier_struct
 {
-    static int arrived = 0;
+    int n_thread;
+    int arrived;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
 
-    pthread_mutex_lock (&mut);	//lock
+} pthreadbase_barrier_t;
 
-    arrived++;
-    if (arrived < expect)
-        pthread_cond_wait (&cond, &mut);
-    else {
-        arrived = 0;		// reset the barrier before broadcast is important
-        pthread_cond_broadcast (&cond);
-    }
 
-    pthread_mutex_unlock (&mut);	//unlock
-}
+pthreadbase_barrier_t* pthreadbase_barrier_init (int n_thread);
 
+
+void pthreadbase_barrier_wait (pthreadbase_barrier_t *barrier);
 
 #endif // BARRIERS_H__
 
