@@ -6,12 +6,9 @@
 
 #include "atoms.h"
 
-#define NONE "none"
 
 ////////////////////////////////////////
 // tatas lock with backoff
-
-#define TATASBF "tatasbf"
 
 typedef volatile unsigned long tatasbf_lock_t;
 
@@ -29,8 +26,6 @@ void tatasbf_lock_release(tatasbf_lock_t* L);
 ////////////////////////////////////////
 // tatas lock
 
-#define TATAS "tatas"
-
 typedef volatile unsigned long tatas_lock_t;
 
 void tatas_lock_init (tatas_lock_t *L);
@@ -44,8 +39,6 @@ void tatas_lock_release (tatas_lock_t* L);
 ////////////////////////////////////////
 // tas lock
 
-#define TAS "tas"
-
 typedef volatile unsigned long tas_lock_t;
 
 void tas_lock_init(tas_lock_t *L); 
@@ -58,8 +51,6 @@ void tas_lock_release(tas_lock_t *L);
 
 ////////////////////////////////////////
 // ticket lock
-
-#define TICKET "ticket"
 
 typedef struct ticket_lock_struct
 {
@@ -78,8 +69,6 @@ void ticket_lock_release (ticket_lock_t *L);
 
 ////////////////////////////////////////
 // MCS lock
-
-#define MCS "mcs"
 
 typedef volatile struct mcs_qnode_struct
 {

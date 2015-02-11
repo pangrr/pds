@@ -2,116 +2,131 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <string>
-
 #include "barriers.h"
 #include "hrtimer_x86.h"
 
 using namespace std;
 
-int n_thread, n_barrier;
+int n_thread, n_barrier, cs_len;
+
+double start_time, finish_time;
 
 tournament_barrier_t *tournament_barrier;
 cs_barrier_t *cs_barrier;
 pthreadbase_barrier_t *pthreadbase_barrier;
 
 
+/* test barriers's performance on critical sections of different length */
+void critical_section (int length)
+{
+    double d;
+    for (int i = 0; i < length; i++) {
+        d = 123456789 / 987654321;
+    }
+}
 
 
-
-void *tournament_barrier_thread (void *_tid)
+void* thread_work (void* _tid)
 {
     int tid = *(int*)_tid;
-    bool sense = true;
 
-    for (int i = 0; i < n_barrier; i++)
-        tournament_barrier_wait (tournament_barrier, tid, &sense);
-}
+    pthreadbase_barrier_wait (pthreadbase_barrier); // all threads created
 
+/* pthreadbase barrier */
+    if (tid == 0)
+        start_time = gethrtime_x86 ();
 
-void *cs_barrier_thread (void *argv)
-{
-    bool local_sense = true;
-    
-    for (int i = 0; i < n_barrier; i++)
-        cs_barrier_wait (cs_barrier, &local_sense);
-}
+    pthreadbase_barrier_wait (pthreadbase_barrier);
 
-
-
-void *pthreadbase_barrier_thread (void * argv)
-{
-    for (int i = 0; i < n_barrier; i++)
+    for (int i = 0; i < n_barrier; i++) {
+        critical_section (cs_len);
         pthreadbase_barrier_wait (pthreadbase_barrier);
+    }
+
+    if (tid == 0) {
+        finish_time = gethrtime_x86 ();
+        printf ("pthread\t%f\n", (finish_time-start_time)*1000);
+    }
+
+    pthreadbase_barrier_wait (pthreadbase_barrier);
+
+/* cs barrier */
+    if (tid == 0)
+        start_time = gethrtime_x86 ();
+
+    bool sense = true;
+    
+    pthreadbase_barrier_wait (pthreadbase_barrier);
+ 
+    for (int i = 0; i < n_barrier; i++) {
+        critical_section (cs_len);
+        cs_barrier_wait (cs_barrier, &sense);
+    }
+    
+
+    if (tid == 0) {
+        finish_time = gethrtime_x86 ();
+        printf ("cs\t%f\n", (finish_time-start_time)*1000);
+    }
+    
+    pthreadbase_barrier_wait (pthreadbase_barrier);
+
+/* tournament barrier */
+    if (tid == 0)
+        start_time = gethrtime_x86 ();
+
+    sense = true;
+
+    pthreadbase_barrier_wait (pthreadbase_barrier);
+
+    for (int i = 0; i < n_barrier; i++) {
+        critical_section (cs_len);
+        tournament_barrier_wait (tournament_barrier, tid, &sense);
+    }
+    
+    if (tid == 0) {
+        finish_time = gethrtime_x86 ();
+        printf ("tournament\t%f\n", (finish_time-start_time)*1000);
+    }
 }
+
 
 
 
 
 int main(int argc, char **argv) 
 {
-    char *_barrier_type;
-
     int c;
-    while ((c = getopt (argc, argv, "b:t:i:")) != -1) {
+    while ((c = getopt (argc, argv, "t:i:c:")) != -1) {
         switch (c) {
             case 't':
                 n_thread = atoi (optarg);
                 break;
-            case 'b':
-                _barrier_type = optarg;
-                break;
             case 'i':
                 n_barrier = atoi (optarg);
                 break;
+            case 'c':
+                cs_len = atoi (optarg);
+                break;
         }
     }
 
-    string barrier_type (_barrier_type);
-    
 
     // launch threads
-    pthread_t *threads = (pthread_t *) malloc (sizeof(pthread_t) * n_thread);
-
-    double start_time = gethrtime_x86 ();
-
-    if (barrier_type.compare (PTHREAD) == 0) {
-        pthreadbase_barrier = pthreadbase_barrier_init ( n_thread);
+    pthread_t *threads = new pthread_t[n_thread];
+    
+    int *tids = new int[n_thread];
+    for (int i = 0; i < n_thread; i++)
+        tids[i] = i;
+    
+    tournament_barrier = tournament_barrier_init (n_thread);
+    pthreadbase_barrier = pthreadbase_barrier_init ( n_thread);
+    cs_barrier = cs_barrier_init (n_thread);
         
-        for (int i = 0; i < n_thread; i++)
-            pthread_create (&threads[i], NULL, pthreadbase_barrier_thread, NULL);
+    for (int i = 0; i < n_thread; i++)
+        pthread_create (&threads[i], NULL, thread_work, (void*)&tids[i]);   
     
-    
-    
-    } else if (barrier_type.compare (CS) == 0) {
-        cs_barrier = cs_barrier_init (n_thread);
-
-        for (int i = 0; i < n_thread; i++)
-            pthread_create (&threads[i], NULL, cs_barrier_thread, NULL);
-    
-    
-    
-    } else if (barrier_type.compare (TOURNAMENT) == 0) {
-        tournament_barrier = tournament_barrier_init (n_thread);
-        int *tid = new int[n_thread];
-        
-        for (int i = 0; i < n_thread; i++) {
-            tid[i] = i;
-
-            pthread_create (&threads[i], NULL, tournament_barrier_thread, (void*)&tid[i]);   
-        }
-
-    
-    
-    } else {
-        printf("Barrier types include: \n%s \n%s \n%s\n", PTHREAD, CS, TOURNAMENT);
-        exit(-1);
-    }
 
     for (int i = 0; i < n_thread; i++)
         pthread_join(threads[i], NULL);
-
-    double finish_time = gethrtime_x86 ();
-
-    printf ("%f milliseconds\n", (finish_time-start_time) * 1000);
 }

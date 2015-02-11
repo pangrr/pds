@@ -8,20 +8,9 @@
 
 #include "atoms.h" // atomic operations
 
-// thread local sense
-typedef struct tid_sense_struct
-{
-    bool sense;
-    int tid;
-} tid_sense_t;
-
-tid_sense_t* tid_sense_init (int n_thread);
-
 
 /////////////////////////////////////
 // centralized sense-reversing barrier
-
-#define CS "cs"
 
 typedef struct cs_barrier_struct
 {
@@ -42,8 +31,6 @@ void cs_barrier_wait (cs_barrier_t *barrier, bool *local_sense);
 
 //////////////////////////////////////
 // tournament barrier
-
-#define TOURNAMENT "tournament"
 
 #define WINNER 0
 #define LOSER 1
@@ -80,8 +67,6 @@ void tournament_barrier_wait (tournament_barrier_t *barrier, int tid, bool *sens
 ///////////////////////////////////////////
 // pthread-based condition synchronization
 // Extracted from sor_pthread.c
-
-#define PTHREAD "pthread"
 
 typedef struct pthreadbase_barrier_struct
 {
