@@ -45,7 +45,8 @@ void* thread_work (void* _tid)
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("pthread\t%f\n", (finish_time-start_time)*1000);
+        printf ("\t\t\t\tmilliseconds\n");
+        printf ("pthread based\t\t\t%f\n", (finish_time-start_time)*1000);
     }
 
     pthreadbase_barrier_wait (pthreadbase_barrier);
@@ -66,7 +67,7 @@ void* thread_work (void* _tid)
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("cs\t%f\n", (finish_time-start_time)*1000);
+        printf ("centralized sense-reverse\t%f\n", (finish_time-start_time)*1000);
     }
     
     pthreadbase_barrier_wait (pthreadbase_barrier);
@@ -86,7 +87,7 @@ void* thread_work (void* _tid)
     
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("tournament\t%f\n", (finish_time-start_time)*1000);
+        printf ("tournament\t\t\t%f\n", (finish_time-start_time)*1000);
     }
 }
 
@@ -96,8 +97,13 @@ void* thread_work (void* _tid)
 
 int main(int argc, char **argv) 
 {
+    // default values of global variables
+    n_thread = 10;
+    n_barrier = 100;
+    cs_len = 10;
+
     int c;
-    while ((c = getopt (argc, argv, "t:i:c:")) != -1) {
+    while ((c = getopt (argc, argv, "t:i:c:h")) != -1) {
         switch (c) {
             case 't':
                 n_thread = atoi (optarg);
@@ -108,6 +114,9 @@ int main(int argc, char **argv)
             case 'c':
                 cs_len = atoi (optarg);
                 break;
+            case 'h':
+                printf("barriers_test\n-t <number of threads> (default=10)\n-i <number of barriers> (default=100)\n-c <relative length of execution time in between barriers> (default=10)\n");
+                return 0;
         }
     }
 

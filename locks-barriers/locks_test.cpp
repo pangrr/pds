@@ -52,6 +52,7 @@ void *thread_work (void *_tid)
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
+        printf ("\tmilliseconds\n");
         printf ("none\t%f\n", (finish_time-start_time)*1000);
     }
 
@@ -223,8 +224,13 @@ void *thread_work (void *_tid)
 
 int main(int argc, char **argv) 
 {
+    // default global values
+    n_thread = 10;
+    n_increase = 1000;
+    each = false;
+    
     int c;
-    while((c = getopt(argc, argv, "t:i:e")) != -1) {
+    while((c = getopt(argc, argv, "t:i:eh")) != -1) {
         switch(c) {
             case 't':
                 n_thread = atoi(optarg);
@@ -235,6 +241,9 @@ int main(int argc, char **argv)
             case 'e':
                 each = true;
                 break;
+            case 'h':
+                printf ("locks_test\n-t <number of threads> (default=10)\n-i <times to increase the counter> (default=1000)\n-e (each thread increase the counter i times, default=false)\n");
+                return 0;
         }
     }
 
