@@ -7,7 +7,8 @@
 
 using namespace std;
 
-int n_thread, n_barrier, cs_len;
+int n_thread;
+unsigned long n_barrier, distance;
 
 double start_time, finish_time;
 
@@ -17,11 +18,10 @@ pthreadbase_barrier_t *pthreadbase_barrier;
 
 
 /* test barriers's performance on critical sections of different length */
-void critical_section (int length)
+void critical_section (unsigned long length)
 {
-    double d;
-    for (int i = 0; i < length; i++) {
-        d = 123456789 / 987654321;
+    for (unsigned long i = 0; i < length; i++) {
+        double d = 123456789 / 987654321;
     }
 }
 
@@ -38,15 +38,15 @@ void* thread_work (void* _tid)
 
     pthreadbase_barrier_wait (pthreadbase_barrier);
 
-    for (int i = 0; i < n_barrier; i++) {
-        critical_section (cs_len);
+    for (unsigned long i = 0; i < n_barrier; i++) {
+        critical_section (distance);
         pthreadbase_barrier_wait (pthreadbase_barrier);
     }
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
         printf ("\t\t\t\tmilliseconds\n");
-        printf ("pthread based\t\t\t%f\n", (finish_time-start_time)*1000);
+        printf ("pthread based\t\t\t%10.6f\n", (finish_time-start_time)*1000);
     }
 
     pthreadbase_barrier_wait (pthreadbase_barrier);
@@ -59,15 +59,15 @@ void* thread_work (void* _tid)
     
     pthreadbase_barrier_wait (pthreadbase_barrier);
  
-    for (int i = 0; i < n_barrier; i++) {
-        critical_section (cs_len);
+    for (unsigned long i = 0; i < n_barrier; i++) {
+        critical_section (distance);
         cs_barrier_wait (cs_barrier, &sense);
     }
     
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("centralized sense-reverse\t%f\n", (finish_time-start_time)*1000);
+        printf ("centralized sense-reverse\t%10.6f\n", (finish_time-start_time)*1000);
     }
     
     pthreadbase_barrier_wait (pthreadbase_barrier);
@@ -80,14 +80,14 @@ void* thread_work (void* _tid)
 
     pthreadbase_barrier_wait (pthreadbase_barrier);
 
-    for (int i = 0; i < n_barrier; i++) {
-        critical_section (cs_len);
+    for (unsigned long i = 0; i < n_barrier; i++) {
+        critical_section (distance);
         tournament_barrier_wait (tournament_barrier, tid, &sense);
     }
     
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("tournament\t\t\t%f\n", (finish_time-start_time)*1000);
+        printf ("tournament\t\t\t%10.6f\n", (finish_time-start_time)*1000);
     }
 }
 
@@ -98,28 +98,29 @@ void* thread_work (void* _tid)
 int main(int argc, char **argv) 
 {
     // default values of global variables
-    n_thread = 10;
-    n_barrier = 100;
-    cs_len = 10;
+    n_thread = 4;
+    n_barrier = 10000;
+    distance = 10;
 
     int c;
-    while ((c = getopt (argc, argv, "t:i:c:h")) != -1) {
+    while ((c = getopt (argc, argv, "t:i:d:h")) != -1) {
         switch (c) {
             case 't':
                 n_thread = atoi (optarg);
                 break;
             case 'i':
-                n_barrier = atoi (optarg);
+                n_barrier = strtoul (optarg, NULL, 0);
                 break;
-            case 'c':
-                cs_len = atoi (optarg);
+            case 'd':
+                distance = strtoul (optarg, NULL, 0);
                 break;
             case 'h':
-                printf("barriers_test\n-t <number of threads> (default=10)\n-i <number of barriers> (default=100)\n-c <relative length of execution time in between barriers> (default=10)\n");
+                printf("barriers_test\n-t <number of threads> (default=4)\n-i <number of barriers> (default=10000)\n-d <distance between barriers> (default=10)\n");
                 return 0;
         }
     }
 
+    printf ("\nthreads=%d\tbarriers=%lu\tdistance=%lu\n\n", n_thread, n_barrier, distance);
 
     // launch threads
     pthread_t *threads = new pthread_t[n_thread];

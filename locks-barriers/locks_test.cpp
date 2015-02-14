@@ -10,7 +10,8 @@
 
 using namespace std;
 
-int counter, n_increase, n_thread;
+unsigned long counter, n_increase;
+int n_thread;
 bool each;
 pthreadbase_barrier_t *barrier;
 
@@ -22,13 +23,14 @@ tas_lock_t tas_lock;
 ticket_lock_t *ticket_lock;
 mcs_qnode_t **mcs_lock;
 
-
+unsigned long *none_perthread_increase, *tas_perthread_increase, *tatas_perthread_increase, *tatasbf_perthread_increase, *ticket_perthread_increase, *mcs_perthread_increase, *fai_perthread_increase;
 
 
 
 void *thread_work (void *_tid) 
 {
     int tid = *(int*)_tid;
+    int increase = 0; // how much does this thread contribute
 
     pthreadbase_barrier_wait (barrier); // all threads created
     
@@ -38,23 +40,28 @@ void *thread_work (void *_tid)
         start_time = gethrtime_x86 ();
     }
     
-    pthreadbase_barrier_wait (barrier);
+    pthreadbase_barrier_wait (barrier); // start racing
 
     if (each) {
-        for (int i = 0; i < n_increase; i++)
+        for (unsigned long i = 0; i < n_increase; i++)
             counter++;
     } else {
-        for (int i = 0; i < n_increase/n_thread; i++) // n_increase >> n_thread
+        while (counter < n_increase) { // who can beat me
             counter++;
+            increase++;
+        }
     }
     
-    pthreadbase_barrier_wait (barrier); 
+    pthreadbase_barrier_wait (barrier); // end racing
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("\tmilliseconds\n");
-        printf ("none\t%f\n", (finish_time-start_time)*1000);
+        printf ("\n\ttime/milliseconds\tcounter\n");
+        printf ("none\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
     }
+
+    none_perthread_increase[tid] = increase;
+    increase = 0;
 
     pthreadbase_barrier_wait (barrier);
 
@@ -64,28 +71,37 @@ void *thread_work (void *_tid)
         start_time = gethrtime_x86 ();
     }
     
-    pthreadbase_barrier_wait (barrier); // start time get
+    pthreadbase_barrier_wait (barrier); // start racing
 
     if (each) {
-        for (int i = 0; i < n_increase; i++) {
+        for (unsigned long i = 0; i < n_increase; i++) {
             tas_lock_acquire(&tas_lock);
             counter++;
             tas_lock_release(&tas_lock);
         }
     } else {
-        while (counter < n_increase) {
+        while (1) {
             tas_lock_acquire(&tas_lock);
-            counter++;
-            tas_lock_release(&tas_lock);
+            if (counter < n_increase) {
+                counter++;
+                increase++;
+                tas_lock_release(&tas_lock);
+            } else {
+                tas_lock_release(&tas_lock);
+                break;
+            }
         }
     }
     
-    pthreadbase_barrier_wait (barrier); 
+    pthreadbase_barrier_wait (barrier); // end racing
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("tas\t%f\n", (finish_time-start_time)*1000);
+        printf ("tas\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
     }
+    
+    tas_perthread_increase[tid] = increase;
+    increase = 0;
     
     pthreadbase_barrier_wait (barrier);
 
@@ -95,28 +111,37 @@ void *thread_work (void *_tid)
         start_time = gethrtime_x86 ();
     }
     
-    pthreadbase_barrier_wait (barrier); // start time get
+    pthreadbase_barrier_wait (barrier); // start racing
 
     if (each) {
-        for (int i = 0; i < n_increase; i++) {
+        for (unsigned long i = 0; i < n_increase; i++) {
             tatas_lock_acquire(&tatas_lock);
             counter++;
             tatas_lock_release(&tatas_lock);
         }
     } else {
-        while (counter < n_increase) {
+        while (1) {
             tatas_lock_acquire(&tatas_lock);
-            counter++;
-            tatas_lock_release(&tatas_lock);
+            if (counter < n_increase) {
+                counter++;
+                increase++;
+                tatas_lock_release(&tatas_lock);
+            } else {
+                tatas_lock_release(&tatas_lock);
+                break;
+            }
         }
     }
     
-    pthreadbase_barrier_wait (barrier); 
+    pthreadbase_barrier_wait (barrier); // end racing
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("tatas\t%f\n", (finish_time-start_time)*1000);
+        printf ("tatas\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
     }
+    
+    tatas_perthread_increase[tid] = increase;
+    increase = 0;
     
     pthreadbase_barrier_wait (barrier);
 
@@ -126,29 +151,38 @@ void *thread_work (void *_tid)
         start_time = gethrtime_x86 ();
     }
     
-    pthreadbase_barrier_wait (barrier); // start time get
+    pthreadbase_barrier_wait (barrier); // start racing
 
     if (each) {
-        for (int i = 0; i < n_increase; i++) {
+        for (unsigned long i = 0; i < n_increase; i++) {
             tatasbf_lock_acquire(&tatasbf_lock);
             counter++;
             tatasbf_lock_release(&tatasbf_lock);
         }
     } else {
-        while (counter < n_increase) {
+        while (1) {
             tatasbf_lock_acquire(&tatasbf_lock);
-            counter++;
-            tatasbf_lock_release(&tatasbf_lock);
+            if (counter < n_increase) {
+                counter++;
+                increase++;
+                tatasbf_lock_release(&tatasbf_lock);
+            } else {
+                tatasbf_lock_release(&tatasbf_lock);
+                break;
+            }
         }
     }
     
-    pthreadbase_barrier_wait (barrier); 
+    pthreadbase_barrier_wait (barrier); // end reacing
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("tatasbf\t%f\n", (finish_time-start_time)*1000);
+        printf ("tatasbf\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
     }
 
+    tatasbf_perthread_increase[tid] = increase;
+    increase = 0;
+    
     pthreadbase_barrier_wait (barrier);
 
 /* ticket lock */
@@ -157,28 +191,37 @@ void *thread_work (void *_tid)
         start_time = gethrtime_x86 ();
     }
     
-    pthreadbase_barrier_wait (barrier); // start time get
+    pthreadbase_barrier_wait (barrier); // start racing
 
     if (each) {
-        for (int i = 0; i < n_increase; i++) {
+        for (unsigned long i = 0; i < n_increase; i++) {
             ticket_lock_acquire(ticket_lock);
             counter++;
             ticket_lock_release(ticket_lock);
         }
     } else {
-        while (counter < n_increase) {
+        while (1) {
             ticket_lock_acquire(ticket_lock);
-            counter++;
-            ticket_lock_release(ticket_lock);
+            if (counter < n_increase) {
+                counter++;
+                increase++;
+                ticket_lock_release(ticket_lock);
+            } else {
+                ticket_lock_release(ticket_lock);
+                break;
+            }
         }
     }
 
-    pthreadbase_barrier_wait (barrier); 
+    pthreadbase_barrier_wait (barrier); // end racing
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("ticket\t%f\n", (finish_time-start_time)*1000);
+        printf ("ticket\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
     }
+    
+    ticket_perthread_increase[tid] = increase;
+    increase = 0;
     
     pthreadbase_barrier_wait (barrier);
     
@@ -188,30 +231,71 @@ void *thread_work (void *_tid)
         start_time = gethrtime_x86 ();
     }
     
-    pthreadbase_barrier_wait (barrier); // start time get
+    pthreadbase_barrier_wait (barrier); // start racing
 
     mcs_qnode_t *I = mcs_qnode_init ();
     
     if (each) {
-        for (int i = 0; i < n_increase; i++) {
+        for (unsigned long i = 0; i < n_increase; i++) {
             mcs_lock_acquire(mcs_lock, I);
             counter++;
             mcs_lock_release(mcs_lock, I);
         }
     } else {
-        while (counter < n_increase) {
+        while (1) {
             mcs_lock_acquire(mcs_lock, I);
-            counter++;
-            mcs_lock_release(mcs_lock, I);
+            if (counter < n_increase) {
+                counter++;
+                increase++;
+                mcs_lock_release(mcs_lock, I);
+            } else {
+                mcs_lock_release(mcs_lock, I);
+                break;
+            }
         }
     }
     
-    pthreadbase_barrier_wait (barrier); 
+    pthreadbase_barrier_wait (barrier); // end racing
 
     if (tid == 0) {
         finish_time = gethrtime_x86 ();
-        printf ("mcs\t%f\n", (finish_time-start_time)*1000);
+        printf ("mcs\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
     }
+    
+    mcs_perthread_increase[tid] = increase;
+    increase = 0;
+    
+    pthreadbase_barrier_wait (barrier);
+
+/* fai */
+    if (tid == 0) {
+        counter = 0;
+        start_time = gethrtime_x86 ();
+    }
+    
+    pthreadbase_barrier_wait (barrier); // start racing
+
+    if (each) {
+        for (unsigned long i = 0; i < n_increase; i++)
+            fai (&counter);
+    } else {
+        while (1) {
+            if (counter < n_increase) {
+                fai (&counter);
+                increase++;
+            } else
+                break;
+        }
+    }
+    
+    pthreadbase_barrier_wait (barrier); // end racing
+
+    if (tid == 0) {
+        finish_time = gethrtime_x86 ();
+        printf ("fai\t%10.6f\t\t%lu\n", (finish_time-start_time)*1000, counter);
+    }
+    
+    fai_perthread_increase[tid] = increase;
 }
 
 
@@ -225,8 +309,8 @@ void *thread_work (void *_tid)
 int main(int argc, char **argv) 
 {
     // default global values
-    n_thread = 10;
-    n_increase = 1000;
+    n_thread = 4;
+    n_increase = 10000;
     each = false;
     
     int c;
@@ -236,19 +320,31 @@ int main(int argc, char **argv)
                 n_thread = atoi(optarg);
                 break;
             case 'i':
-                n_increase = atoi(optarg);
+                n_increase = strtoul(optarg, NULL, 0);
                 break;
             case 'e':
                 each = true;
                 break;
             case 'h':
-                printf ("locks_test\n-t <number of threads> (default=10)\n-i <times to increase the counter> (default=1000)\n-e (each thread increase the counter i times, default=false)\n");
+                printf ("locks_test\n-t <number of threads> (default=4)\n-i <times to increase the counter> (default=10000)\n-e (each thread increase the counter i times, default=false)\n");
                 return 0;
         }
     }
 
+    printf ("\nthreads=%d\tincrease=%lu\t", n_thread, n_increase);
+    if (each) printf ("total=false\n");
+    else printf ("total=true\n");
+
 
     barrier = pthreadbase_barrier_init (n_thread);
+
+    none_perthread_increase = new unsigned long[n_thread];
+    tas_perthread_increase = new unsigned long[n_thread];
+    tatas_perthread_increase = new unsigned long[n_thread];
+    tatasbf_perthread_increase = new unsigned long[n_thread];
+    ticket_perthread_increase = new unsigned long[n_thread];
+    mcs_perthread_increase = new unsigned long[n_thread];
+    fai_perthread_increase = new unsigned long[n_thread];
 
     // launch threads
     int *tids = new int[n_thread];
@@ -269,4 +365,20 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < n_thread; i++)
         pthread_join(threads[i], NULL);
+    
+    if (!each) {
+        printf ("\nHow many increases each thread contribute?\n");
+        printf ("tid       none        tas      tatas    tatasbf     ticket        mcs        fai\n");
+        for (int i = 0; i < n_thread; i++)
+            printf ("%3d %10lu %10lu %10lu %10lu %10lu %10lu %10lu\n", i,
+                    none_perthread_increase[i],
+                    tas_perthread_increase[i],
+                    tatas_perthread_increase[i],
+                    tatasbf_perthread_increase[i],
+                    ticket_perthread_increase[i],
+                    mcs_perthread_increase[i],
+                    fai_perthread_increase[i]);
+    }
+
+
 }
