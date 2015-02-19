@@ -326,7 +326,7 @@ int main(int argc, char **argv)
                 each = true;
                 break;
             case 'h':
-                printf ("locks_test\n-t <number of threads> (default=4)\n-i <times to increase the counter> (default=10000)\n-e (each thread increase the counter i times, default=false)\n");
+                printf ("\nlocks_test\n-t <number of threads> (default=4)\n-i <times to increase the counter> (default=10000)\n-e (each thread increase the counter i times, default=false)\n\n");
                 return 0;
         }
     }
@@ -379,6 +379,7 @@ int main(int argc, char **argv)
                     mcs_perthread_increase[i],
                     fai_perthread_increase[i]);
     }
+    
 
-
+    printf ("\n");
 }

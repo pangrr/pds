@@ -115,7 +115,7 @@ int main(int argc, char **argv)
                 distance = strtoul (optarg, NULL, 0);
                 break;
             case 'h':
-                printf("barriers_test\n-t <number of threads> (default=4)\n-i <number of barriers> (default=10000)\n-d <distance between barriers> (default=10)\n");
+                printf("\nbarriers_test\n-t <number of threads> (default=4)\n-i <number of barriers> (default=10000)\n-d <distance between barriers> (default=10)\n\n");
                 return 0;
         }
     }
@@ -139,4 +139,6 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < n_thread; i++)
         pthread_join(threads[i], NULL);
+
+    printf ("\n");
 }
