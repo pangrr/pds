@@ -3,13 +3,27 @@
 #ifndef _data_h
 #define _data_h
 
-    typedef struct
-    {
-        double** data;  /* The data matrix. */
-        int samples;    /* Number of data. */   
-        int dimension;  /* Number of dimensions of the data. */
-    } data;
 
-    data* data_load (char*);
+
+typedef struct
+{
+    double* data;
+    int dim;
+} DataPoint;
+
+
+
+typedef struct
+{
+    DataPoint** data;  /* An array of pointers to data points. */
+    int nData; /* Number of data points. */
+    int dim;  /* Number of dimensions. */
+} DataSet;
+
+
+/* Read data set from file. */
+DataSet* loadData (const char* fileName, int dim, int nData);    
+
+
 
 #endif
