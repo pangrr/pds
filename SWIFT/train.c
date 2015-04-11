@@ -9,9 +9,9 @@
 int main (int argc, char** argv)
 {
 
-    DataSet* dataSet = loadData ("train.dat", 2, 1000);
+    DataSet* dataSet = loadData ("train_2x1k.dat", 2, 1000);
 
-    GMM* gmm = initGMM (dataSet, 15, 30, 0, 0);
+    GMM* gmm = initGMM (dataSet, 3, 20, 0, 0);
 
     trainEM (gmm, dataSet);
 
