@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+make
+
+./em4gmm
