@@ -1,0 +1,31 @@
+Parallel and Distributed System Program Assignment #4
+Ran Pang
+
+
+
+How to run the programs?
+
+    For the word count assignment, complile and run WordCount.java. This program takes 3 input arguments besides the class name: number of reduce tasks, input directory, output directory.
+    The input directory should be a HDFS directory that contains all the files to be processed. The output directory should be a HDFS directory where all output files will be stored.
+
+    For the Jacobi assignment, compile and run Jacobi.java. This program takes 5 input arguments besides the class name: input matrix order, maximum number of iterations, number of reducer tasks, input directory, output directory.
+    The input directory should be a HDFS directory that contains the files storing the matrix to be processed. The output directory should be a HDFS directory, a subdirectory i/ of which is going to be created to store all output files for iteration i. Each row in the output files for iteration i is a pair of the row number and the corresponding x value.
+
+
+What are inside the programs?
+    
+    In WordCount.java, a mapper read several lines from the file. The mapper then split each line into an array of words according to non-letter characters. Then the mapper output < word, 1 > for each word.
+    A combiner get inputs that shares the same word as key from the outputs from mappers in a node. Then the combiner sum up the values and output < word, local sum >.
+    A reducer get inputs that shares the same word as key from the outputs from combiners. Then the recuder sum up the values and output < word, global sum > which is written into a file in the program's output directory.
+
+    In Jacobi.java, mappers read from both the files containing the matrix A, vector b and the files containing the solution vector x from last iteration. Then the mappers output < i, (j, A[i][j]) > where i = 0..N-1 and j = 0..N-1, < i, (N, b[i]) > where j = 0..N-1 and duplicate each element in the last solution x[j] for each row such that < i, (j, x[j]) > is output where i = 0..N-1 for each j.
+    Now that ouputs from mapper use row number as the key, reducers receive < i, {(j, A[i][j]),..., (N, b[i]),..., (j, x[j]),...} > j = 0..N-1 for each i. Then new solution values can be updated by x[i] = (bi - sum(A[i][j]*x[j])) / A[i][i] where i != j. In the end the reducers output the updated solution in the form < i, x[i] >.
+    The iteration continues until the solution converges in terms of 10 significant digits for all x[i].
+
+
+
+How is the preformance?
+
+    The word count program typically takes about 30 seconds to finish the task.
+
+    The Jacobi program typically takes about 30 seconds per iteration for matrices no greater than 1024*1024. However for the 1048576*1048576 matrix, the program cannot complete even a single iteration within half an hour. The mapper tasks proceeded at a normal pace while the reducer tasks slowed down dramatically as time flies. The problem was then narrowed down to the data transfer from the mappers to the reducers. It turned out that if the mappers use a constant value rather than row number as the key, the program would speed up to about 30 seconds per iteration. But the underlying cause and the solution remained unfound.
