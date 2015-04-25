@@ -26,19 +26,21 @@ GMM* initGMM (DataSet* trainData, int sampleSize, int nComp, int fixRate, int it
     gmm->nFixed = 0;
     gmm->it = it;
     gmm->eps = eps;
-    gmm->respSample = (double*) malloc (sampleSize*nComp*sizeof(double));
-    gmm->respTrain = (double*) malloc (trainData->size*nComp*sizeof(double));
-    gmm->likeTrain = (double*) malloc (it*sizeof(double));
+    gmm->resp = (double*) malloc (trainData->size*nComp*sizeof(double));
+    gmm->sampleLike = (double*) malloc (it*sizeof(double));
+    gmm->prob = (double*) malloc (trainData->size*nComp*sizeof(double));
+
+
 
     /* Initialize components. */
     double* cov = initCov (gmm);
     double mix = 1.0 / nComp;
-    double** randMean = randSample (gmm, nComp);
+    int* randMean = randSample (gmm, nComp);
 
     int i;
     for (i = 0; i < nComp; i++)
     {
-        gmm->comp[i] = initGauss (gmm->dim, randMean[i], cov, mix);
+        gmm->comp[i] = initGauss (gmm->dim, trainData->dataSet[randMean[i]], cov, mix);
     }
     
     return gmm;
@@ -48,43 +50,41 @@ GMM* initGMM (DataSet* trainData, int sampleSize, int nComp, int fixRate, int it
 
 
 
-double** randSample (GMM* gmm, int sampleSize)
+int* randSample (GMM* gmm, int sampleSize)
 {
-    double** res = (double**) malloc (sampleSize*sizeof(double));
-    double** dataSet = gmm->trainData->dataSet;
-
-    double* order = (double*) malloc (sampleSize*sizeof(double));
-    int* index = (int*) malloc (sampleSize*sizeof(double));
+    int* randIndex = (int*) malloc (sampleSize*sizeof(int));
+    int trainSize = gmm->trainData->size;
+    double* order = (double*) malloc (trainSize*sizeof(double));
+    int* index = (int*) malloc (trainSize*sizeof(int));
     int i;
 
-    for (i = 0; i < sampleSize; i++)
+    for (i = 0; i < trainSize; i++)
     {
         order[i] = (double)rand() / (double)RAND_MAX;
         index[i] = i;
     }
 
-    quickSort (index, order, 0, sampleSize-1);
+    quickSort (index, order, 0, trainSize-1);
 
     for (i = 0; i < sampleSize; i++)
     {
-        res[i] = dataSet[index[i]];
+        randIndex[i] = index[i];
     }
 
     free (order);
     free (index);
-
-    return res;
+    return randIndex;
 }
 
 
 
 
-
-
+/* Generate a covariance matrix of the whole train data set. */
 double* initCov (GMM* gmm)
 {
     int sampleSize = gmm->sampleSize;
-    double** sample = gmm->sample;
+    double** trainDataSet = gmm->trainData->dataSet;
+    int* sample = gmm->sample;
     int dim = gmm->dim;
     double* cov = (double*) malloc (dim*dim*sizeof(double));
     double* mean = (double*) malloc (dim*sizeof(double));
@@ -95,7 +95,7 @@ double* initCov (GMM* gmm)
     set (mean, 1, dim, 0.0);
     for (i = 0; i < sampleSize; i++)
     {
-        addIn (mean, sample[i], 1, dim);
+        addIn (mean, trainDataSet[sample[i]], 1, dim);
     }
     multIn (mean, 1, dim, 1.0/sampleSize);
 
@@ -104,7 +104,7 @@ double* initCov (GMM* gmm)
     set (cov, dim, dim, 0.0);
     for (i = 0; i < sampleSize; i++)
     {
-        double* sub = subOut (sample[i], mean, 1, dim);
+        double* sub = subOut (trainDataSet[sample[i]], mean, 1, dim);
         double* mult = dot (sub, sub, dim, 1, 1, dim);
         addIn (cov, mult, dim, dim);
         
@@ -117,8 +117,13 @@ double* initCov (GMM* gmm)
     return cov;
 }
 
-//double* initCov (int dim)
+
+
+
+/* Generate a unit covariance matrix. */
+//double* initCov (GMM* gmm)
 //{
+//    int dim = gmm->dim;
 //    double* cov = (double*) malloc (dim*dim*sizeof(double));
 //    int i, j;
 //    for (i = 0; i < dim; i++)
@@ -149,17 +154,20 @@ Gauss* initGauss (int dim, double* mean, double* cov, double mix)
     Gauss* gauss = (Gauss*) malloc (sizeof(Gauss));
 
     gauss->mix = mix;
-    gauss->popSample = 0.0;
-    gauss->popTrain = 0.0;
+    gauss->samplePop = 0.0;
+    gauss->trainPop = 0.0;
     gauss->dim = dim;
     gauss->fixed = 0;
 
     gauss->mean = copyOut (mean, 1, dim);
     gauss->cov = copyOut (cov, dim, dim);
     
-    gauss->covDet = detGauss (gauss->cov, dim);
-    gauss->covInv = inv (gauss->cov, dim, gauss->covDet);
-    gauss->probCoef = 1.0 / pow (pow(2*M_PI, dim)*gauss->covDet, 0.5);
+    gauss->covDet = det (gauss->cov, dim);
+    gauss->covInv = inv (gauss->cov, dim);
+    gauss->probCoef = pow (pow(2*M_PI, dim)*gauss->covDet, 0.5);
+    
+    //printf ("%f ", gauss->probCoef);
+    //printDoubleArray (gauss->covInv, dim , dim);
     
     return gauss;
 }
@@ -174,23 +182,54 @@ Gauss* initGauss (int dim, double* mean, double* cov, double mix)
 
 int train (GMM* gmm)
 {
+//    int j;
+//    for (j = 0; j < gmm->nComp; j++)
+//        printDoubleArray (gmm->comp[j]->cov, gmm->dim, gmm->dim);
+//    printf ("\n");
+//    return 0;
+
+    
+    
     EM (gmm);
-    EStepTrain (gmm);
-    updatePopTrain (gmm);
+    return 0;
+
+
+    updateTrainProb (gmm);
+    updateTrainResp (gmm);
+    updateTrainPop (gmm);
     
     while (1)
     {
         fixComp (gmm);
-        printf ("\t%d fixed\n", gmm->nFixed);
+    //    printf ("\t%d fixed\n", gmm->nFixed);
         if (gmm->nFixed == gmm->nComp)
         {
             break;
         }
+        
         resample (gmm);
+        
+        //printDoubleArray (gmm->resp, gmm->trainData->size, gmm->nComp);
+        //printIntArray (gmm->sample, 1, gmm->sampleSize);
+        //for (j = 0; j < gmm->nComp; j++)
+        //    printf ("%d ", gmm->comp[j]->fixed);
+        
         EM (gmm);
+        
+//        for (j = 0; j < gmm->nComp; j++)
+//            printf ("%f ", gmm->comp[j]->mix);
+//        printf ("\n");
+        
         adjMix (gmm);
-        EStepTrain (gmm);
-        updatePopTrain (gmm);
+        
+//        for (j = 0; j < gmm->nComp; j++)
+//            printf ("%f ", gmm->comp[j]->mix);
+//        printf ("\n");
+//        return 0;
+
+        updateTrainProb (gmm);
+        updateTrainResp (gmm);
+        updateTrainPop (gmm);
     }
     return 0;
 }
@@ -210,16 +249,16 @@ int train (GMM* gmm)
 void resample (GMM* gmm)
 {
     int sampleSize = gmm->sampleSize;
-    double** sample = gmm->sample;
-    double** dataSet = gmm->trainData->dataSet;
+    int trainSize = gmm->trainData->size;
+    int* sample = gmm->sample;
     double* weight = gmm->dataWeight;
-    double* order = (double*) malloc (sampleSize*sizeof(double));
-    int* index = (int*) malloc (sampleSize*sizeof(double));
+    double* order = (double*) malloc (trainSize*sizeof(double));
+    int* index = (int*) malloc (trainSize*sizeof(double));
     int i;
     
     weightData (gmm);
     
-    for (i = 0; i < sampleSize; i++)
+    for (i = 0; i < trainSize; i++)
     {
         order[i] = pow ((double)rand()/(double)RAND_MAX, 1.0/weight[i]);
         index[i] = i;
@@ -229,7 +268,7 @@ void resample (GMM* gmm)
 
     for (i = 0; i < sampleSize; i++)
     {
-        sample[i] = dataSet[index[i]];
+        sample[i] = index[i];
     }
 
     free (order);
@@ -244,7 +283,7 @@ void resample (GMM* gmm)
 void weightData (GMM* gmm)
 {
     int dataSize = gmm->trainData->size;
-    double* resp = gmm->respTrain;
+    double* resp = gmm->resp;
     int nComp = gmm->nComp;
     Gauss** comp = gmm->comp;
     Gauss* gauss;
@@ -285,8 +324,7 @@ int fixComp (GMM* gmm)
     if (nUnfixed == 0)
     {
         return 0;
-    }
-    
+    }  
 
     double* order = (double*) malloc (nUnfixed*sizeof(double));
     int* index = (int*) malloc (nUnfixed*sizeof(double));
@@ -298,7 +336,7 @@ int fixComp (GMM* gmm)
         gauss = comp[i];
         if (gauss->fixed == 0)
         {
-            order[j] = gauss->popTrain;
+            order[j] = gauss->trainPop;
             index[j] = i;
             j++;
         }
@@ -377,19 +415,54 @@ int EM (GMM* gmm)
 {
     int i;
     int it = gmm->it;
+    updateSampleProb (gmm);
+//    int j;
+//    for (j = 0; j < gmm->sampleSize; j++)
+//    {
+//        if (fabs(gmm->prob[gmm->sample[j]]) > 1e-10)
+//            printf ("%f ", gmm->prob[gmm->sample[j]]);
+//    }
+//    return 0;
+    return 0;
+
 
     for (i = 0; i < it; i++)
     {
-        EStepSample (gmm);
-        MStep (gmm);
-        likeTrain (gmm, i);
-        printf ("%d\t%f\n", i, gmm->likeTrain[i]);
+        /* E step. */
+        updateSampleResp (gmm);
+        
+        updateSamplePop (gmm);
+        
+        /* M step. */
+        updateMix (gmm);
+        updateMean (gmm);
+        updateCov (gmm);
+        
+        updateCovDet (gmm);
+        updateCovInv (gmm);
+        updateProbCoef (gmm);
+        
+        updateSampleProb (gmm);
+
+        updateSampleLike (gmm, i);
+        //printf ("%d\t%f\n", i, gmm->sampleLike[i]);
+        
         if (isConverge(gmm, i) == 1)
         {
             return 1;
         }
     }
     return 0;
+    
+    
+//    //printIntArray (gmm->sample, 1, gmm->sampleSize);
+//    int j;
+//    for (j = 0; j < gmm->nComp; j++)
+//        //printDoubleArray (gmm->comp[j]->mean, 1, gmm->dim);
+//        //printDoubleArray (gmm->comp[j]->covInv, gmm->dim, gmm->dim);
+//        //printf ("%f ", gmm->comp[j]->probCoef);
+//    printDoubleArray (gmm->prob, 1, gmm->trainData->size*gmm->nComp);
+//    return 0;
 }
 
 
@@ -404,9 +477,9 @@ int isConverge (GMM* gmm, int it)
 {
     if (it > 0)
     {
-        double new = gmm->likeTrain[it];
-        double old = gmm->likeTrain[it-1];
-        if (fabs((new-old)/old) < gmm->eps)
+        double new = gmm->sampleLike[it];
+        double old = gmm->sampleLike[it-1];
+        if (fabs(new-old) < gmm->eps)
         {
             return 1;
         }
@@ -430,12 +503,11 @@ double gaussProb (Gauss* gauss, double* dataPoint)
     double* sub = subOut (dataPoint, mean, 1, dim);
     double* partA = dot (dot(sub, gauss->covInv, 1, dim, dim, dim), sub, 1, dim, dim, 1);
 
-    
-    double prob = gauss->probCoef * exp(-(*partA)/2.0);
+    double prob = exp(-(*partA)/2.0) / gauss->probCoef;
+    printf ("%.16f ", prob);
 
     free (sub);
     free (partA);
-    
     return prob;
 }
 
@@ -443,57 +515,134 @@ double gaussProb (Gauss* gauss, double* dataPoint)
 
 
 
-void likeTrain (GMM* gmm, int it)
+void updateSampleLike (GMM* gmm, int it)
 {
     int sampleSize = gmm->sampleSize;
-    double** sample = gmm->sample;
-    double* dataPoint;
+    int* sample = gmm->sample;
+    int dataPointIndex;
     double sumIn;
+    double* prob = gmm->prob;
     int nComp = gmm->nComp;
-    Gauss** comp = gmm->comp;
-    Gauss* gauss;
     int i, j;
     double sumOut = 0.0;
-    
+
     for (i = 0; i < sampleSize; i++)
     {
-        dataPoint = sample[i];
+        dataPointIndex = sample[i];
         sumIn = 0.0;
-        
         for (j = 0; j < nComp; j++)
         {
-            gauss = comp[j];
-            sumIn += gauss->mix * gaussProb (gauss, dataPoint);
+            sumIn += prob[dataPointIndex*nComp+j];
         }
-
         sumOut += log (sumIn);
     }
-    gmm->likeTrain[it] = sumOut;
+    gmm->sampleLike[it] = sumOut;
+}
+
+
+
+
+void updateTrainProb (GMM* gmm)
+{
+    double* prob = gmm->prob;
+    int sampleSize = gmm->sampleSize;
+    int trainSize = gmm->trainData->size;
+    double** trainDataSet = gmm->trainData->dataSet;
+    int nComp = gmm->nComp;
+    int* sample = gmm->sample;
+    double* dataPoint;
+    Gauss** comp = gmm->comp;
+    Gauss* gauss;
+    int i, j, k;
+    int inSample;
+
+    for (i = 0; i < trainSize; i++)
+    {
+        inSample = 0;
+        for (k = 0; k < sampleSize; k++)
+        {
+            if (i == sample[k])
+            {
+                inSample = 1;
+                break;
+            }
+        }
+
+        if (inSample == 0)
+        {
+            dataPoint = trainDataSet[i];
+            for (j = 0; j < nComp; j++)
+            {
+                gauss = comp[j];
+                prob[i*nComp+j] = gauss->mix * gaussProb (gauss, dataPoint);
+            }
+        }
+    }
 }
 
 
 
 
 
-void EStepTrain (GMM* gmm)
+
+
+
+
+
+void updateSampleProb (GMM* gmm)
+{
+    double* prob = gmm->prob;
+    int sampleSize = gmm->sampleSize;
+    int* sample = gmm->sample;
+    double** dataSet = gmm->trainData->dataSet;
+    int nComp = gmm->nComp;
+    double* dataPoint;
+    Gauss** comp = gmm->comp;
+    Gauss* gauss;
+    int i, j, dataPointIndex;
+
+    for (i = 0; i < sampleSize; i++)
+    {
+        dataPointIndex = sample[i];
+        dataPoint = dataSet[dataPointIndex];
+
+        for (j = 0; j < nComp; j++)
+        {
+            gauss = comp[j];
+            prob[dataPointIndex*nComp+j] = gauss->mix * gaussProb (gauss, dataPoint);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+void updateTrainResp (GMM* gmm)
 {
     int dataSize = gmm->trainData->size;
     int nComp = gmm->nComp;
-    double** dataSet = gmm->trainData->dataSet;
-    Gauss** comp = gmm->comp;
-    Gauss* gauss;
-    double* respTrain = gmm->respTrain;
-    double* dataPoint;
+    double* resp = gmm->resp;
+    double* prob = gmm->prob;
     int i, j;
+    double sumProb;
 
+    
     for (i = 0; i < dataSize; i++)
     {
-        dataPoint = dataSet[i];
+        sumProb = 0.0;
 
         for (j = 0; j < nComp; j++)
         {
-            gauss = comp[j];
-            respTrain[i*nComp+j] = resp (gmm, gauss, dataPoint);
+            sumProb += prob[i*nComp+j];
+        }
+        
+        for (j = 0; j < nComp; j++)
+        {
+            resp[i*nComp+j] = prob[i*nComp+j] / sumProb;
         }
     }
 }
@@ -503,25 +652,29 @@ void EStepTrain (GMM* gmm)
 
 
 
-void EStepSample (GMM* gmm)
+void updateSampleResp (GMM* gmm)
 {
     int sampleSize = gmm->sampleSize;
     int nComp = gmm->nComp;
-    double** sample = gmm->sample;
-    Gauss** comp = gmm->comp;
-    Gauss* gauss;
-    double* respSample = gmm->respSample;
-    double* dataPoint;
-    int i, j;
+    int* sample = gmm->sample;
+    double* resp = gmm->resp;
+    int i, j, dataPointIndex;
+    double sumProb;
+    double* prob = gmm->prob;
 
     for (i = 0; i < sampleSize; i++)
     {
-        dataPoint = sample[i];
+        dataPointIndex = sample[i];
+        sumProb = 0.0;
 
         for (j = 0; j < nComp; j++)
         {
-            gauss = comp[j];
-            respSample[i*nComp+j] = resp (gmm, gauss, dataPoint);
+            sumProb += prob[dataPointIndex*nComp+j];
+        }
+        
+        for (j = 0; j < nComp; j++)
+        {
+            resp[dataPointIndex*nComp+j] = prob[dataPointIndex*nComp+j] / sumProb;
         }
     }
 }
@@ -533,44 +686,32 @@ void EStepSample (GMM* gmm)
 
 
 
-double resp (GMM* gmm, Gauss* gauss, double* dataPoint)
-{
-    int k;
-    Gauss* gaussK;
-    double mix = gauss->mix;
-    double resp = mix * gaussProb (gauss, dataPoint);
-    int nComp = gmm->nComp;
-    double sum = 0.0;
-
-    for (k = 0; k < nComp; k++)
-    {
-        gaussK = gmm->comp[k];
-        sum += (gaussK->mix) * gaussProb (gaussK, dataPoint);
-    }
-
-    resp /= sum;
-
-    return resp;
-}
-
-
+//double resp (GMM* gmm, Gauss* gauss, double* dataPoint)
+//{
+//    int k;
+//    Gauss* gaussK;
+//    double mix = gauss->mix;
+//    double resp = mix * gaussProb (gauss, dataPoint);
+//    int nComp = gmm->nComp;
+//    double sum = 0.0;
+//
+//    for (k = 0; k < nComp; k++)
+//    {
+//        gaussK = gmm->comp[k];
+//        sum += (gaussK->mix) * gaussProb (gaussK, dataPoint);
+//    }
+//
+//    resp /= sum;
+//
+//    return resp;
+//}
 
 
 
 
 
 
-void MStep (GMM* gmm)
-{
-    updatePopSample (gmm);
-    updateMix (gmm);
-    updateMean (gmm);
-    updateCov (gmm);
 
-    updateCovDet (gmm);
-    updateCovInv (gmm);
-    updateProbCoef (gmm);
-}
 
 
 
@@ -588,7 +729,7 @@ void updateCovDet (GMM* gmm)
         gauss = gmm->comp[i];
         if (gauss->fixed == 0)
         {
-            gauss->covDet = detGauss (gauss->cov, dim);
+            gauss->covDet = det (gauss->cov, dim);
         }
     }
 }
@@ -610,7 +751,7 @@ void updateCovInv (GMM* gmm)
         gauss = gmm->comp[i];
         if (gauss->fixed == 0)
         {
-            gauss->covInv = inv (gauss->cov, dim, gauss->covDet);
+            gauss->covInv = inv (gauss->cov, dim);
         }
     }
 
@@ -633,7 +774,7 @@ void updateProbCoef (GMM* gmm)
         gauss = gmm->comp[i];
         if (gauss->fixed == 0)
         {
-            gauss->probCoef = 1.0 / pow (pow(2*M_PI, dim)*gauss->covDet, 0.5);
+            gauss->probCoef = pow (pow(2*M_PI, dim)*gauss->covDet, 0.5);
         }
     }   
 }
@@ -644,15 +785,15 @@ void updateProbCoef (GMM* gmm)
 
 
 
-void updatePopSample (GMM* gmm)
+void updateSamplePop (GMM* gmm)
 {
-    double* resp = gmm->respSample;
+    double* resp = gmm->resp;
     int nComp = gmm->nComp;
     Gauss** comp = gmm->comp;
     Gauss* gauss;
     double pop;
     int sampleSize = gmm->sampleSize;
-
+    int* sample = gmm->sample;
     int i, j;
     
     for (i = 0; i < nComp; i++)
@@ -665,11 +806,10 @@ void updatePopSample (GMM* gmm)
 
             for (j = 0; j < sampleSize; j++)
             {
-                pop += resp[j*nComp+i];
+                pop += resp[sample[j]*nComp+i];
             }
 
-
-            gauss->popSample = pop;
+            gauss->samplePop = pop;
         }
     }
 }
@@ -677,15 +817,14 @@ void updatePopSample (GMM* gmm)
 
 
 
-void updatePopTrain (GMM* gmm)
+void updateTrainPop (GMM* gmm)
 {
-    double* resp = gmm->respTrain;
+    double* resp = gmm->resp;
     int nComp = gmm->nComp;
     Gauss** comp = gmm->comp;
     Gauss* gauss;
     double pop;
     int dataSize = gmm->trainData->size;
-
     int i, j;
     
     for (i = 0; i < nComp; i++)
@@ -701,7 +840,7 @@ void updatePopTrain (GMM* gmm)
                 pop += resp[j*nComp+i];
             }
 
-            gauss->popTrain = pop;
+            gauss->trainPop = pop;
         }
     }
 }
@@ -714,9 +853,11 @@ void updateMean (GMM* gmm)
 {
     int nComp = gmm->nComp;
     int sampleSize = gmm->sampleSize;
+    double** dataSet = gmm->trainData->dataSet;
     int dim = gmm->dim;
-    double* resp = gmm->respSample;
-    double** sample = gmm->sample;
+    int dataPointIndex;
+    double* resp = gmm->resp;
+    int* sample = gmm->sample;
     double* mean;
     Gauss* gauss;
     double* dataPoint;
@@ -733,13 +874,14 @@ void updateMean (GMM* gmm)
 
             for (j = 0; j < sampleSize; j++)
             {
-                dataPoint = sample[j];
-                double* prod = multOut (dataPoint, 1, dim, resp[j*nComp+i]);
+                dataPointIndex = sample[j];
+                dataPoint = dataSet[dataPointIndex];
+                double* prod = multOut (dataPoint, 1, dim, resp[dataPointIndex*nComp+i]);
                 addIn (mean, prod, 1, dim);
                 free (prod);
             }
 
-            multIn (mean, 1, dim, 1.0/(gauss->popSample));
+            multIn (mean, 1, dim, 1.0/(gauss->samplePop));
         }
     }
     
@@ -755,9 +897,11 @@ void updateMean (GMM* gmm)
 void updateCov (GMM* gmm)
 {
     int nComp = gmm->nComp;
+    double** trainDataSet = gmm->trainData->dataSet;
     int sampleSize = gmm->sampleSize;
-    double** sample = gmm->sample;
+    int* sample = gmm->sample;
     double* dataPoint;
+    int dataPointIndex;
     int dim = gmm->dim;
     double* cov;
     Gauss** comp = gmm->comp;
@@ -776,17 +920,18 @@ void updateCov (GMM* gmm)
 
             for (j = 0; j < sampleSize; j++)
             {
-                dataPoint = sample[j];
+                dataPointIndex = sample[j];
+                dataPoint = trainDataSet[dataPointIndex];
                 double* dif = subOut (dataPoint, gauss->mean, 1, dim);
                 double* prod = dot (dif, dif, dim, 1, 1, dim);
-                multIn (prod, dim, dim, gmm->respSample[j*nComp+i]);
+                multIn (prod, dim, dim, gmm->resp[dataPointIndex*nComp+i]);
                 addIn (cov, prod, dim, dim);
                 
                 free (dif);
                 free (prod);
             }
 
-            multIn (cov, dim, dim, 1.0/(gauss->popSample));
+            multIn (cov, dim, dim, 1.0/(gauss->samplePop));
         }
         
     }
@@ -811,7 +956,7 @@ void updateMix (GMM* gmm)
         gauss = comp[i];
         if (gauss->fixed == 0)
         {
-            gauss->mix = (double)gauss->popSample / (double)sampleSize;
+            gauss->mix = (double)gauss->samplePop / (double)sampleSize;
         }
     }
 }

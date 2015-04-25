@@ -43,3 +43,55 @@ DataSet* loadData (const char* fileName, int dim, int size)
     fclose (file);
     return dataSet;
 }
+
+
+
+
+
+
+
+void printData (DataSet* dataSet, int n)
+{
+    int dim = dataSet->dim;
+    int size = dataSet->size;
+    double* dataPoint;
+    int i, j;
+
+    if (n*2 < size)
+    {
+        for (i = 0; i < n; i++)
+        {
+            dataPoint = dataSet->dataSet[i];
+            for (j = 0; j < dim; j++)
+            {
+                printf ("%f ", dataPoint[j]);
+            }
+            printf ("\n");
+        }
+
+        printf ("...\n");
+
+        for (i = size-n; i < size; i++)
+        {
+            dataPoint = dataSet->dataSet[i];
+            for (j = 0; j < dim; j++)
+            {
+                printf ("%f ", dataPoint[j]);
+            }
+            printf ("\n");
+        }
+    }
+    else
+    {
+        for (i = 0; i < size; i++)
+        { 
+            dataPoint = dataSet->dataSet[i];
+            for (j = 0; j < dim; j++)
+            {
+                printf ("%f ", dataPoint[j]);
+            }
+            printf ("\n");
+        }
+    }
+}
+

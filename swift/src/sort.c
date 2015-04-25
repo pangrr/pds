@@ -36,13 +36,13 @@ int partition (int* index, double* order, int l, int r)
         {
             ++i;
         }
-        while (order[i] <= pivot && i <= r);
+        while (order[i] >= pivot && i <= r);
 
         do
         {
             --j;
         }
-        while (order[j] > pivot);
+        while (order[j] < pivot);
 
         if (i >= j)
         {

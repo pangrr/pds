@@ -40,55 +40,133 @@ double* dot (double* A, double* B, int mA, int nA, int mB, int nB)
             C[i*n+j] = sum;
         }
     }
-
     return C;
 }
 
 
 
 
-
-double* inv (double* A, int n, double deter)
+/* Compute inverse of a square matrix by Gaussian-Jordan Elimination. */
+double* inv (double* A, int n)
 {
-    double* C = cof (A, n);
-    tran (C, n);
-    multIn (C, n, n, 1.0/deter);
-    return C;
+    int i, j, k, pivot;
+    double temp;
+
+    /* Augment the matrix with an identity matrix. */
+    double* I = (double*) malloc (n*n*sizeof(double));
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            if (i == j)
+            {
+                I[i*n+j] = 1.0;
+            }
+            else
+            {
+                I[i*n+j] = 0.0;
+            }
+        }
+    }
+
+
+    /* Gaussian-Jordan Elimination. */
+    for (i = 0; i < n; i++)
+    {
+        /* Find pivot row. */
+        pivot = i;
+        for (j = i+1; j < n; j++)
+        {
+            if (A[j*n+i] > A[pivot*n+i])
+            {
+                pivot = j;
+            }
+        }
+
+        /* Swap pivot row. */
+        if (pivot != i)
+        {
+            for (j = 0; j < n; j++)
+            {
+                temp = A[i*n+j];
+                A[i*n+j] = A[pivot*n+j];
+                A[pivot*n+j] = temp;
+                
+                temp = I[i*n+j];
+                I[i*n+j] = I[pivot*n+j];
+                I[pivot*n+j] = temp;
+            }
+        }
+
+        /* Row operations. */
+        for (j = 0; j < n; j++)
+        {
+            if (i != j)
+            {
+                temp = A[j*n+i];
+                for (k = 0; k < n; k++)
+                {
+                    A[j*n+k] -= A[i*n+k] / A[i*n+i] * temp;
+                    I[j*n+k] -= I[i*n+k] / A[i*n+i] * temp;
+                }
+            }
+            else
+            {
+                temp = A[j*n+i];
+                for (k = 0; k < n; k++)
+                {
+                    A[j*n+k] /= temp;
+                    I[j*n+k] /= temp;
+                }
+            }
+        }
+    }
+    return I;
 }
 
 
+//double* inv (double* A, int n, double deter)
+//{
+//    double* C = cof (A, n);
+//    printDoubleArray (C, n, n);
+//    tran (C, n);
+//    multIn (C, n, n, 1.0/deter);
+//    return C;
+//}
 
 
-double detGauss (double* A, int n)
+
+
+
+/* Compute square matrix determinant by Gaussian Elimination with partial pivoting. */
+double det (double* A, int n)
 {
     double* B = copyOut (A, n, n);
-    double pivot, temp, x, deter=1.0;
-    int i, j, k, pivotRow;
+    double temp, x, deter=1.0;
+    int i, j, k, pivot;
 
     /* Gaussian Elimination with partial pivoting. */
     for (i = 0; i < n-1; i++)
     {
         /* Find pivot. */
-        pivot = B[i*n+i];
-        pivotRow = i;
-        for (j = i; j < n; j++)
+        pivot = i;
+        for (j = i+1; j < n; j++)
         {
-            if (B[j*n+i] > pivot)
+            if (B[j*n+i] > B[pivot*n+i])
             {
-                pivot = B[j*n+i];
-                pivotRow = j;
+                pivot = j;
             }
         }
 
         /* Swap pivot row to head. */
-        if (pivotRow != i)
+        if (pivot != i)
         {
             deter = -deter;
             for (j = i; j < n; j++)
             {
                 temp = B[i*n+j];
-                B[i*n+j] = B[pivotRow*n+j];
-                B[pivotRow*n+j] = temp;
+                B[i*n+j] = B[pivot*n+j];
+                B[pivot*n+j] = temp;
             }
         }
 
@@ -121,71 +199,48 @@ double detGauss (double* A, int n)
 
 
 
-double det (double* A, int n)
-{
-    int i, j, j1, j2;
-    double deter = 0.0;
-    double* M = NULL;
-
-    if (n < 1)
-    {
-        printf ("Matrix size less than 1!\n");
-        return 0.0;
-    }
-    else if (n == 1)
-    {
-        deter = A[0];
-    }
-    else if (n == 2)
-    {
-        deter = A[0] * A[3] - A[2] * A[1];
-    }
-    else
-    {
-        for (j1 = 0; j1 < n; j1++)
-        {
-            M = (double*) malloc ((n-1)*(n-1)*sizeof(double));
-
-            for (i = 1; i < n; i++)
-            {
-                j2 = 0;
-                for (j = 0; j < n; j++)
-                {
-                    if (j == j1) continue;
-                    M[(i-1)*(n-1)+j2] = A[i*n+j];
-                    j2++;
-                }
-            }
-
-            deter += pow (-1.0, j1+2.0) * A[j1] * det (M, n-1);
-
-            free (M);
-        }
-    }
-    return deter;
-}
-
-
-
-
-
-
-
-void tran (double* A, int n)
-{
-    int i, j;
-    double tmp;
-
-    for (i = 1; i < n; i++)
-    {
-        for (j = 0; j < i; j++)
-        {
-            tmp = A[i*n+j];
-            A[i*n+j] = A[j*n+i];
-            A[j*n+i] = tmp;
-        }
-    }
-}
+//double det (double* A, int n)
+//{
+//    int i, j, j1, j2;
+//    double deter = 0.0;
+//    double* M = NULL;
+//
+//    if (n < 1)
+//    {
+//        printf ("Matrix size less than 1!\n");
+//        return 0.0;
+//    }
+//    else if (n == 1)
+//    {
+//        deter = A[0];
+//    }
+//    else if (n == 2)
+//    {
+//        deter = A[0] * A[3] - A[2] * A[1];
+//    }
+//    else
+//    {
+//        for (j1 = 0; j1 < n; j1++)
+//        {
+//            M = (double*) malloc ((n-1)*(n-1)*sizeof(double));
+//
+//            for (i = 1; i < n; i++)
+//            {
+//                j2 = 0;
+//                for (j = 0; j < n; j++)
+//                {
+//                    if (j == j1) continue;
+//                    M[(i-1)*(n-1)+j2] = A[i*n+j];
+//                    j2++;
+//                }
+//            }
+//
+//            deter += pow (-1.0, j1+2.0) * A[j1] * det (M, n-1);
+//            free (M);
+//        }
+//    }
+//    return deter;
+//}
 
 
 
@@ -193,45 +248,70 @@ void tran (double* A, int n)
 
 
 
+//void tran (double* A, int n)
+//{
+//    int i, j;
+//    double tmp;
+//
+//    for (i = 1; i < n; i++)
+//    {
+//        for (j = 0; j < i; j++)
+//        {
+//            tmp = A[i*n+j];
+//            A[i*n+j] = A[j*n+i];
+//            A[j*n+i] = tmp;
+//        }
+//    }
+//}
 
-double* cof (double* A, int n)
-{
-    int i, j, ii, jj, i1, j1;
-    double* C = (double*) malloc (n*n*sizeof(double));
-    double* M = (double*) malloc ((n-1)*(n-1)*sizeof(double));
 
-    for (j = 0; j < n; j++)
-    {
-        for (i = 0; i < n; i++)
-        {
-            i1 = 0;
-            for (ii = 0; ii < n; ii++)
-            {
-                if (ii == i) continue;
-                j1 = 0;
-                for (jj = 0; jj < n; jj++)
-                {
-                    if (jj == j) continue;
-                    M[i1*(n-1)+j1] = A[ii*n+jj];
-                    j1++;
-                }
-                i1++;
-            }
 
-            C[i*n+j] = pow (-1.0, i+j+2.0) * detGauss (M, n-1);
-        }
-    }
 
-    free (M);
-    return C;
-}
+
+
+
+
+//double* cof (double* A, int n)
+//{
+//    int i, j, ii, jj, i1, j1;
+//    double* C = (double*) malloc (n*n*sizeof(double));
+//    double* M = (double*) malloc ((n-1)*(n-1)*sizeof(double));
+//
+//    for (j = 0; j < n; j++)
+//    {
+//        for (i = 0; i < n; i++)
+//        {
+//            i1 = 0;
+//            for (ii = 0; ii < n; ii++)
+//            {
+//                if (ii == i) continue;
+//                j1 = 0;
+//                for (jj = 0; jj < n; jj++)
+//                {
+//                    if (jj == j) continue;
+//                    M[i1*(n-1)+j1] = A[ii*n+jj];
+//                    j1++;
+//                }
+//                i1++;
+//            }
+//
+//            C[i*n+j] = pow (-1.0, i+j+2.0) * det (M, n-1);
+//        }
+//    }
+//
+//    free (M);
+//    return C;
+//}
+
+
+
+
 
 
 
 double* copyOut (double* A, int m, int n)
 {
     double* C = (double*) malloc (m*n*sizeof(double));
-    
     int i, j;
     
     for (i = 0; i < m; i++)
@@ -244,6 +324,9 @@ double* copyOut (double* A, int m, int n)
 
     return C;
 }
+
+
+
 
 
 
@@ -262,6 +345,10 @@ void copyIn (double* A, double* B, int m, int n)
 }
 
 
+
+
+
+
 void set (double* A, int m, int n, double x)
 {
     int i, j;
@@ -274,10 +361,14 @@ void set (double* A, int m, int n, double x)
     }
 }
 
+
+
+
+
+
 double* subOut (double* A, double* B, int m, int n)
 {
     double* C = (double*) malloc (m*n*sizeof(double));
-
     int i, j;
 
     for (i = 0; i < m; i++)
@@ -287,9 +378,13 @@ double* subOut (double* A, double* B, int m, int n)
            C[i*n+j] = A[i*n+j] - B[i*n+j];
         }
     }
-
     return C;
 }
+
+
+
+
+
 
 
 void addIn (double* A, double* B, int m, int n)
@@ -304,6 +399,9 @@ void addIn (double* A, double* B, int m, int n)
     }
 
 }
+
+
+
 
 
 
@@ -324,6 +422,12 @@ double* multOut (double* A, int m, int n , double x)
 }
 
 
+
+
+
+
+
+
 void multIn (double* A, int m, int n , double x)
 {
     int i, j;
@@ -340,7 +444,11 @@ void multIn (double* A, int m, int n , double x)
 
 
 
-void printArray (double* A, int m, int n)
+
+
+
+
+void printDoubleArray (double* A, int m, int n)
 {
     int i, j;
 
@@ -349,6 +457,27 @@ void printArray (double* A, int m, int n)
         for (j = 0; j < n; j++)
         {
             printf ("%f ", A[i*n+j]);
+        }
+        printf ("\n");
+    }
+}
+
+
+
+
+
+
+
+
+void printIntArray (int* A, int m, int n)
+{
+    int i, j;
+
+    for (i = 0; i < m; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            printf ("%d ", A[i*n+j]);
         }
         printf ("\n");
     }

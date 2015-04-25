@@ -12,21 +12,20 @@
 double* dot (double* A, double* B, int mA, int nA, int mB, int nB);
 
 /* Return the inversion of a square matrix. */
-double* inv (double* A, int n, double deter);
+double* inv (double* A, int n);
 
 /* Return the determinant of a square matrix. */
 double det (double* A, int n);
 
-/* Compute determinant by first doing Gaussian Elimination with partial pivoting
- * then compute the product of the diagonal elements. */
-double detGauss (double* A, int n);
 
 
-/* Transpose a square matrix in place. */
-void tran (double* A, int n);
 
-/* Return the cofactor matrix of a square matrix. */
-double* cof (double* A, int n);
+
+///* Transpose a square matrix in place. */
+//void tran (double* A, int n);
+//
+///* Return the cofactor matrix of a square matrix. */
+//double* cof (double* A, int n);
 
 
 
@@ -61,7 +60,7 @@ void addIn (double* A, double* B, int m, int n);
 
 
 /* Print matrix. */
-void printArray (double* A, int m, int n);
-
+void printDoubleArray (double* A, int m, int n);
+void printIntArray (int* A, int m, int n);
 
 #endif
