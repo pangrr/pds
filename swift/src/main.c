@@ -1,6 +1,7 @@
 /* train.c */
 
 #include "global.h"
+#include "kmeans.h"
 #include "gmm.h"
 #include "linalg.h"
 #include "data.h"
@@ -8,24 +9,46 @@
 
 int main (int argc, char** argv)
 {
-//    double begin, end;
-   DataSet* trainData = loadData ("../data/19x30k1", 19, 30000);
+    int nData = 100000;
+    int sampleSize = 50000;
+    int dim = 10;
+    int nComp = 100;
+    int fixRate = 10;
+    double kmEps = 1e-6;
+    double gmmEps = 1e-1;
+    int gmmIt = 50;
+    int kmIt = 1000;
+    double begin, end;
+
+    DataSet* trainData = loadData ("../data/10x100k", dim, nData);
+    int* sample = randSample (nData, sampleSize);
+    DataSet* sampleData = getSubDataSet (trainData, sample, sampleSize);
+//    int i, j;
+//    for (i = 0; i < sampleSize; i++)
+//    {
+//        for (j = 0; j < dim; j++)
+//        {
+//            printf ("%f ", sampleDataSet->dataSet[i][j]);
+//        }
+//        printf ("\n");
+//    }
+//    return 0;
+    Kmeans* kmeans = initKmeans (sampleData, nComp, kmIt, kmEps);
+    trainKmeans (kmeans);
+    
+    double** covs = getKDiagCovs (kmeans);
+    double** means = kmeans->means;
+    
+    begin = gethrtime_x86();
+
+    GMM* gmm = initGMM (trainData, sample, sampleSize, means, covs, nComp, fixRate, gmmIt, gmmEps);
+    trainGMM (gmm);
+
+    end = gethrtime_x86();
+    printf("%f sec\n", end-begin);
+    return 0;
   
-            /* trainData, sampleSize, nComp, fixRate, iteration, eps */
-    GMM* gmm = initGMM (trainData, 30000, 50, 50, 50, 1e-10);
     
-//    DataSet* trainData = loadData ("../data/19x30k1", 19, 30000);
-//    GMM* gmm = initGMM (trainData, 10000, 10, 3, 20, 1e-10);
-
-    
-//    begin = gethrtime_x86();
-    train (gmm);
-//    end = gethrtime_x86();
-
-//    printf("%f sec\n", end-begin);
-
-
-
 
 
 
@@ -35,7 +58,4 @@ int main (int argc, char** argv)
 //    quickSort (index, order, 0, 8);
 //    printDoubleArray (inverse, 3, 3);
 //    printIntArray (index, 1, 9);
-
-
-    return 0;
 }

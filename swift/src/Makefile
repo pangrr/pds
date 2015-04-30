@@ -1,7 +1,7 @@
-swift: global.h gmm.h gmm.c linalg.h linalg.c data.h data.c sort.h sort.c main.c hrtimer_x86.h hrtimer_x86.c
-#	gcc -lm -Wall -o swift gmm.c linalg.c data.c sort.c main.c hrtimer_x86.c
-#	gcc -fopenmp -lm -Wall -o swift gmm.c linalg.c data.c sort.c main.c hrtimer_x86.c
-	gcc -pg -lm -Wall -o swift gmm.c linalg.c data.c sort.c main.c hrtimer_x86.c
+swift: global.h gmm.h gmm.c kmeans.h kmeans.c data.h data.c sort.h sort.c main.c hrtimer_x86.h hrtimer_x86.c
+#	gcc -lm -Wall -o swift gmm.c kmeans.c data.c sort.c main.c hrtimer_x86.c
+	gcc -fopenmp -lm -Wall -o swift gmm.c kmeans.c data.c sort.c main.c hrtimer_x86.c
+#	gcc -pg -lm -Wall -o swift gmm.c kmeans.c data.c sort.c main.c hrtimer_x86.c
 
 clean:
 	rm swift

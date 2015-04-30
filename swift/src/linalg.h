@@ -11,6 +11,9 @@
 /* Return the multiplication of two matrices. */
 double* dot (double* A, double* B, int mA, int nA, int mB, int nB);
 
+/* Return the inner product of two vectors. */
+double inner (double* A, double* B, int n);
+
 /* Return the inversion of a square matrix. */
 double* inv (double* A, int n);
 

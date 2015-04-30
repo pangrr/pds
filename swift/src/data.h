@@ -3,7 +3,7 @@
 #ifndef _data_h
 #define _data_h
 
-
+#include "sort.h"
 
 typedef struct
 {
@@ -17,6 +17,10 @@ typedef struct
 DataSet* loadData (const char* fileName, int dim, int size);    
 /* Print the first and last n lines of data. */
 void printData (DataSet* dataSet, int n);
+
+DataSet* getSubDataSet (DataSet* dataSet, int* subset, int n);
+
+int* randSample (int nData, int sampleSize);
 
 
 #endif

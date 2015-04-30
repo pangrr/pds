@@ -63,28 +63,25 @@ typedef struct
 
 
 /* Initialize GMM. */
-GMM* initGMM (DataSet* trainData, int sampleSize, int nComp, int fixRate, int it, double eps);
+GMM* initGMM (DataSet* trainData, int* sample, int sampleSize, double** means, double** covs, int nComp, int fixRate, int it, double eps);
 
-/* Return an array of index of data point in train data set based on unweighted random sampling. */
-int* randSample (GMM* gmm, int sampleSize);
-
-
-/* Generate an initial covariance matrix. */
-double* initCov (GMM* gmm);
 
 /* Initialize Gauss. */
 Gauss* initGauss (int dim, double* mean, double* cov, double mix);
 
 
 
-
+void resetArray (double* A, int n);
 
 
 /* Train GMM using iterative sampling based EM. */
-int train (GMM* gmm);
+int trainGMM (GMM* gmm);
 
-
-
+/* Print parameters of GMM. */
+void printGMM (GMM* gmm);
+void printMean (GMM* gmm);
+void printCov (GMM* gmm);
+void printMix (GMM* gmm);
 
 /* Select a weighted randomg sample from train data set. */
 void resample (GMM* gmm);
@@ -152,9 +149,6 @@ void updateMix (GMM* gmm);
 
 /* Update covariance determinant for each unfixed component. */
 void updateCovDet (GMM* gmm);
-
-/* Update covariance inverse for each unfixed component. */
-void updateCovInv (GMM* gmm);
 
 /* Update probability coefficient for each unfixed component. */
 void updateProbCoef (GMM* gmm);

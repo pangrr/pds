@@ -2,46 +2,50 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ms/call  ms/call  name    
- 41.69      0.10     0.10  2525000     0.00     0.00  dot
- 16.68      0.14     0.04  1535000     0.00     0.00  subOut
- 12.51      0.17     0.03      190     0.16     0.35  updateCov
- 12.51      0.20     0.03      190     0.16     0.16  updateSampleResp
-  8.34      0.22     0.02   990000     0.00     0.00  gaussProb
-  4.17      0.23     0.01   545000     0.00     0.00  multOut
-  4.17      0.24     0.01      190     0.05     0.11  updateMean
-  0.00      0.24     0.00  1090000     0.00     0.00  addIn
-  0.00      0.24     0.00   548280     0.00     0.00  multIn
-  0.00      0.24     0.00     5520     0.00     0.00  copyOut
-  0.00      0.24     0.00     5500     0.00     0.00  detGauss
-  0.00      0.24     0.00     2511     0.00     0.00  partition
-  0.00      0.24     0.00     2180     0.00     0.00  set
-  0.00      0.24     0.00     1100     0.00     0.00  cof
-  0.00      0.24     0.00     1100     0.00     0.00  inv
-  0.00      0.24     0.00     1100     0.00     0.00  tran
-  0.00      0.24     0.00      194     0.00     0.63  updateSampleProb
-  0.00      0.24     0.00      190     0.00     0.00  isConverge
-  0.00      0.24     0.00      190     0.00     0.00  updateCovDet
-  0.00      0.24     0.00      190     0.00     0.00  updateCovInv
-  0.00      0.24     0.00      190     0.00     0.00  updateMix
-  0.00      0.24     0.00      190     0.00     0.00  updateProbCoef
-  0.00      0.24     0.00      190     0.00     0.00  updateSampleLike
-  0.00      0.24     0.00      190     0.00     0.00  updateSamplePop
-  0.00      0.24     0.00       10     0.00     0.00  initGauss
-  0.00      0.24     0.00        9     0.00     0.00  quickSort
-  0.00      0.24     0.00        4     0.00    59.41  EMTrain
-  0.00      0.24     0.00        4     0.00     0.00  fixComp
-  0.00      0.24     0.00        4     0.00     0.00  updateTrainPop
-  0.00      0.24     0.00        4     0.00     0.63  updateTrainProb
-  0.00      0.24     0.00        4     0.00     0.00  updateTrainResp
-  0.00      0.24     0.00        3     0.00     0.00  adjMix
-  0.00      0.24     0.00        3     0.00     0.00  resample
-  0.00      0.24     0.00        3     0.00     0.00  weightData
-  0.00      0.24     0.00        2     0.00     0.00  randSample
-  0.00      0.24     0.00        1     0.00     0.00  initCov
-  0.00      0.24     0.00        1     0.00     0.00  initGMM
-  0.00      0.24     0.00        1     0.00     0.00  loadData
-  0.00      0.24     0.00        1     0.00   240.14  train
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 31.41    196.36   196.36 1760000000     0.00     0.00  gaussProb
+ 20.16    322.41   126.04       10    12.60    13.16  updateTrainProb
+ 15.81    421.23    98.83      332     0.30     0.30  updateCov
+ 13.48    505.48    84.25      332     0.25     0.25  updateMean
+  5.98    542.85    37.36 840016800     0.00     0.00  getDist
+  4.39    570.27    27.43      332     0.08     0.08  updateSampleResp
+  2.06    583.16    12.89      332     0.04     0.04  updateSamplePop
+  1.95    595.36    12.20      342     0.04     0.59  updateSampleProb
+  1.61    605.39    10.04      168     0.06     0.28  assign
+  1.40    614.15     8.76      332     0.03     0.03  updateSampleLike
+  1.00    620.37     6.22    16800     0.00     0.00  updateKMean
+  0.43    623.03     2.66   425315     0.00     0.00  partition
+  0.20    624.30     1.27       10     0.13     0.13  updateTrainResp
+  0.08    624.79     0.49       10     0.05     0.05  updateTrainPop
+  0.05    625.11     0.32        9     0.04     0.04  weightData
+  0.03    625.29     0.18        1     0.18     0.31  randKMeans
+  0.02    625.40     0.11      332     0.00     0.00  isConverge
+  0.01    625.46     0.06      100     0.00     0.00  getKDiagCov
+  0.00    625.48     0.02       21     0.00     0.13  quickSort
+  0.00    625.49     0.01      332     0.00     0.00  updateMix
+  0.00    625.50     0.01       10     0.00    43.53  EM
+  0.00    625.51     0.01        9     0.00     0.16  resample
+  0.00    625.52     0.01        1     0.01     0.01  loadData
+  0.00    625.52     0.00    33860     0.00     0.00  resetArray
+  0.00    625.52     0.00      332     0.00     0.00  updateCovDet
+  0.00    625.52     0.00      332     0.00     0.00  updateProbCoef
+  0.00    625.52     0.00      168     0.00     0.04  updateKMeans
+  0.00    625.52     0.00      100     0.00     0.00  initGauss
+  0.00    625.52     0.00       10     0.00     0.13  fixComp
+  0.00    625.52     0.00        9     0.00     0.00  adjMix
+  0.00    625.52     0.00        2     0.00     0.00  gethrcycle_x86
+  0.00    625.52     0.00        2     0.00     0.00  gethrtime_x86
+  0.00    625.52     0.00        1     0.00     0.06  getKDiagCovs
+  0.00    625.52     0.00        1     0.00     0.00  getMHZ_x86
+  0.00    625.52     0.00        1     0.00     0.00  getSubDataSet
+  0.00    625.52     0.00        1     0.00     0.00  initGMM
+  0.00    625.52     0.00        1     0.00     0.31  initKmeans
+  0.00    625.52     0.00        1     0.00     0.00  printCov
+  0.00    625.52     0.00        1     0.00     0.00  printMean
+  0.00    625.52     0.00        1     0.00     0.00  printMix
+  0.00    625.52     0.00        1     0.00     0.13  randSample
+  0.00    625.52     0.00        1     0.00   571.39  trainGMM
+  0.00    625.52     0.00        1     0.00    53.62  trainKmeans
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -73,195 +77,197 @@ name       the name of the function.  This is the minor sort
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 4.16% of 0.24 seconds
+granularity: each sample hit covers 2 byte(s) for 0.00% of 625.52 seconds
 
 index % time    self  children    called     name
-                0.00    0.24       1/1           main [2]
-[1]    100.0    0.00    0.24       1         train [1]
-                0.00    0.24       4/4           EMTrain [3]
-                0.00    0.00       4/4           updateTrainProb [12]
-                0.00    0.00       4/4           updateTrainResp [33]
-                0.00    0.00       4/4           updateTrainPop [32]
-                0.00    0.00       4/4           fixComp [31]
-                0.00    0.00       3/3           resample [35]
-                0.00    0.00       3/3           adjMix [34]
------------------------------------------------
                                                  <spontaneous>
-[2]    100.0    0.00    0.24                 main [2]
-                0.00    0.24       1/1           train [1]
-                0.00    0.00       1/1           loadData [40]
-                0.00    0.00       1/1           initGMM [39]
+[1]    100.0    0.00  625.52                 main [1]
+                0.00  571.39       1/1           trainGMM [2]
+                0.00   53.62       1/1           trainKmeans [9]
+                0.00    0.31       1/1           initKmeans [24]
+                0.00    0.13       1/1           randSample [26]
+                0.00    0.06       1/1           getKDiagCovs [29]
+                0.01    0.00       1/1           loadData [31]
+                0.00    0.00       2/2           gethrtime_x86 [38]
+                0.00    0.00       1/1           getSubDataSet [40]
+                0.00    0.00       1/1           initGMM [41]
 -----------------------------------------------
-                0.00    0.24       4/4           train [1]
-[3]     99.0    0.00    0.24       4         EMTrain [3]
-                0.00    0.12     194/194         updateSampleProb [5]
-                0.03    0.04     190/190         updateCov [7]
-                0.03    0.00     190/190         updateSampleResp [9]
-                0.01    0.01     190/190         updateMean [10]
-                0.00    0.00     190/190         updateMix [25]
-                0.00    0.00     190/190         updateSamplePop [28]
-                0.00    0.00     190/190         updateCovInv [24]
-                0.00    0.00     190/190         updateCovDet [23]
-                0.00    0.00     190/190         updateProbCoef [26]
-                0.00    0.00     190/190         updateSampleLike [27]
-                0.00    0.00     190/190         isConverge [22]
+                0.00  571.39       1/1           main [1]
+[2]     91.3    0.00  571.39       1         trainGMM [2]
+                0.01  435.24      10/10          EM [3]
+              126.04    5.58      10/10          updateTrainProb [6]
+                0.01    1.47       9/9           resample [19]
+                0.00    1.28      10/10          fixComp [20]
+                1.27    0.00      10/10          updateTrainResp [21]
+                0.49    0.00      10/10          updateTrainPop [22]
+                0.00    0.00       9/9           adjMix [36]
+                0.00    0.00       1/1           printMix [44]
+                0.00    0.00       1/1           printCov [42]
+                0.00    0.00       1/1           printMean [43]
 -----------------------------------------------
-                0.00    0.00   20000/990000      updateTrainProb [12]
-                0.02    0.10  970000/990000      updateSampleProb [5]
-[4]     51.8    0.02    0.10  990000         gaussProb [4]
-                0.08    0.00 1980000/2525000     dot [6]
-                0.03    0.00  990000/1535000     subOut [8]
+                0.01  435.24      10/10          trainGMM [2]
+[3]     69.6    0.01  435.24      10         EM [3]
+               12.20  190.78     342/342         updateSampleProb [4]
+               98.83    0.00     332/332         updateCov [7]
+               84.25    0.00     332/332         updateMean [8]
+               27.43    0.00     332/332         updateSampleResp [12]
+               12.89    0.00     332/332         updateSamplePop [13]
+                8.76    0.00     332/332         updateSampleLike [14]
+                0.11    0.00     332/332         isConverge [27]
+                0.01    0.00     332/332         updateMix [30]
+                0.00    0.00     332/332         updateProbCoef [34]
+                0.00    0.00     332/332         updateCovDet [33]
 -----------------------------------------------
-                0.00    0.12     194/194         EMTrain [3]
-[5]     50.7    0.00    0.12     194         updateSampleProb [5]
-                0.02    0.10  970000/990000      gaussProb [4]
+               12.20  190.78     342/342         EM [3]
+[4]     32.4   12.20  190.78     342         updateSampleProb [4]
+              190.78    0.00 1710000000/1760000000     gaussProb [5]
 -----------------------------------------------
-                0.02    0.00  545000/2525000     updateCov [7]
-                0.08    0.00 1980000/2525000     gaussProb [4]
-[6]     41.7    0.10    0.00 2525000         dot [6]
+                5.58    0.00 50000000/1760000000     updateTrainProb [6]
+              190.78    0.00 1710000000/1760000000     updateSampleProb [4]
+[5]     31.4  196.36    0.00 1760000000         gaussProb [5]
 -----------------------------------------------
-                0.03    0.04     190/190         EMTrain [3]
-[7]     27.4    0.03    0.04     190         updateCov [7]
-                0.02    0.00  545000/2525000     dot [6]
-                0.01    0.00  545000/1535000     subOut [8]
-                0.00    0.00  546090/548280      multIn [14]
-                0.00    0.00  545000/1090000     addIn [13]
-                0.00    0.00    1090/2180        set [18]
+              126.04    5.58      10/10          trainGMM [2]
+[6]     21.0  126.04    5.58      10         updateTrainProb [6]
+                5.58    0.00 50000000/1760000000     gaussProb [5]
 -----------------------------------------------
-                0.01    0.00  545000/1535000     updateCov [7]
-                0.03    0.00  990000/1535000     gaussProb [4]
-[8]     16.7    0.04    0.00 1535000         subOut [8]
+               98.83    0.00     332/332         EM [3]
+[7]     15.8   98.83    0.00     332         updateCov [7]
+                0.00    0.00   16930/33860       resetArray [32]
 -----------------------------------------------
-                0.03    0.00     190/190         EMTrain [3]
-[9]     12.5    0.03    0.00     190         updateSampleResp [9]
+               84.25    0.00     332/332         EM [3]
+[8]     13.5   84.25    0.00     332         updateMean [8]
+                0.00    0.00   16930/33860       resetArray [32]
 -----------------------------------------------
-                0.01    0.01     190/190         EMTrain [3]
-[10]     8.3    0.01    0.01     190         updateMean [10]
-                0.01    0.00  545000/545000      multOut [11]
-                0.00    0.00  545000/1090000     addIn [13]
-                0.00    0.00    1090/2180        set [18]
-                0.00    0.00    1090/548280      multIn [14]
+                0.00   53.62       1/1           main [1]
+[9]      8.6    0.00   53.62       1         trainKmeans [9]
+               10.04   37.36     168/168         assign [10]
+                0.00    6.22     168/168         updateKMeans [16]
 -----------------------------------------------
-                0.01    0.00  545000/545000      updateMean [10]
-[11]     4.2    0.01    0.00  545000         multOut [11]
+               10.04   37.36     168/168         trainKmeans [9]
+[10]     7.6   10.04   37.36     168         assign [10]
+               37.36    0.00 840000000/840016800     getDist [11]
 -----------------------------------------------
-                0.00    0.00       4/4           train [1]
-[12]     1.0    0.00    0.00       4         updateTrainProb [12]
-                0.00    0.00   20000/990000      gaussProb [4]
+                0.00    0.00   16800/840016800     updateKMean [15]
+               37.36    0.00 840000000/840016800     assign [10]
+[11]     6.0   37.36    0.00 840016800         getDist [11]
 -----------------------------------------------
-                0.00    0.00  545000/1090000     updateMean [10]
-                0.00    0.00  545000/1090000     updateCov [7]
-[13]     0.0    0.00    0.00 1090000         addIn [13]
+               27.43    0.00     332/332         EM [3]
+[12]     4.4   27.43    0.00     332         updateSampleResp [12]
 -----------------------------------------------
-                0.00    0.00    1090/548280      updateMean [10]
-                0.00    0.00    1100/548280      inv [20]
-                0.00    0.00  546090/548280      updateCov [7]
-[14]     0.0    0.00    0.00  548280         multIn [14]
+               12.89    0.00     332/332         EM [3]
+[13]     2.1   12.89    0.00     332         updateSamplePop [13]
 -----------------------------------------------
-                0.00    0.00      20/5520        initGauss [29]
-                0.00    0.00    5500/5520        detGauss [16]
-[15]     0.0    0.00    0.00    5520         copyOut [15]
+                8.76    0.00     332/332         EM [3]
+[14]     1.4    8.76    0.00     332         updateSampleLike [14]
 -----------------------------------------------
-                0.00    0.00      10/5500        initGauss [29]
-                0.00    0.00    1090/5500        updateCovDet [23]
-                0.00    0.00    4400/5500        cof [19]
-[16]     0.0    0.00    0.00    5500         detGauss [16]
-                0.00    0.00    5500/5520        copyOut [15]
+                6.22    0.00   16800/16800       updateKMeans [16]
+[15]     1.0    6.22    0.00   16800         updateKMean [15]
+                0.00    0.00   16800/840016800     getDist [11]
 -----------------------------------------------
-                0.00    0.00    2511/2511        quickSort [30]
-[17]     0.0    0.00    0.00    2511         partition [17]
+                0.00    6.22     168/168         trainKmeans [9]
+[16]     1.0    0.00    6.22     168         updateKMeans [16]
+                6.22    0.00   16800/16800       updateKMean [15]
 -----------------------------------------------
-                0.00    0.00    1090/2180        updateMean [10]
-                0.00    0.00    1090/2180        updateCov [7]
-[18]     0.0    0.00    0.00    2180         set [18]
+                              850630             quickSort [17]
+                0.00    0.13       1/21          randKMeans [25]
+                0.00    0.13       1/21          randSample [26]
+                0.01    1.14       9/21          resample [19]
+                0.01    1.27      10/21          fixComp [20]
+[17]     0.4    0.02    2.66      21+850630  quickSort [17]
+                2.66    0.00  425315/425315      partition [18]
+                              850630             quickSort [17]
 -----------------------------------------------
-                0.00    0.00    1100/1100        inv [20]
-[19]     0.0    0.00    0.00    1100         cof [19]
-                0.00    0.00    4400/5500        detGauss [16]
+                2.66    0.00  425315/425315      quickSort [17]
+[18]     0.4    2.66    0.00  425315         partition [18]
 -----------------------------------------------
-                0.00    0.00      10/1100        initGauss [29]
-                0.00    0.00    1090/1100        updateCovInv [24]
-[20]     0.0    0.00    0.00    1100         inv [20]
-                0.00    0.00    1100/1100        cof [19]
-                0.00    0.00    1100/1100        tran [21]
-                0.00    0.00    1100/548280      multIn [14]
+                0.01    1.47       9/9           trainGMM [2]
+[19]     0.2    0.01    1.47       9         resample [19]
+                0.01    1.14       9/21          quickSort [17]
+                0.32    0.00       9/9           weightData [23]
 -----------------------------------------------
-                0.00    0.00    1100/1100        inv [20]
-[21]     0.0    0.00    0.00    1100         tran [21]
+                0.00    1.28      10/10          trainGMM [2]
+[20]     0.2    0.00    1.28      10         fixComp [20]
+                0.01    1.27      10/21          quickSort [17]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[22]     0.0    0.00    0.00     190         isConverge [22]
+                1.27    0.00      10/10          trainGMM [2]
+[21]     0.2    1.27    0.00      10         updateTrainResp [21]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[23]     0.0    0.00    0.00     190         updateCovDet [23]
-                0.00    0.00    1090/5500        detGauss [16]
+                0.49    0.00      10/10          trainGMM [2]
+[22]     0.1    0.49    0.00      10         updateTrainPop [22]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[24]     0.0    0.00    0.00     190         updateCovInv [24]
-                0.00    0.00    1090/1100        inv [20]
+                0.32    0.00       9/9           resample [19]
+[23]     0.1    0.32    0.00       9         weightData [23]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[25]     0.0    0.00    0.00     190         updateMix [25]
+                0.00    0.31       1/1           main [1]
+[24]     0.0    0.00    0.31       1         initKmeans [24]
+                0.18    0.13       1/1           randKMeans [25]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[26]     0.0    0.00    0.00     190         updateProbCoef [26]
+                0.18    0.13       1/1           initKmeans [24]
+[25]     0.0    0.18    0.13       1         randKMeans [25]
+                0.00    0.13       1/21          quickSort [17]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[27]     0.0    0.00    0.00     190         updateSampleLike [27]
+                0.00    0.13       1/1           main [1]
+[26]     0.0    0.00    0.13       1         randSample [26]
+                0.00    0.13       1/21          quickSort [17]
 -----------------------------------------------
-                0.00    0.00     190/190         EMTrain [3]
-[28]     0.0    0.00    0.00     190         updateSamplePop [28]
+                0.11    0.00     332/332         EM [3]
+[27]     0.0    0.11    0.00     332         isConverge [27]
 -----------------------------------------------
-                0.00    0.00      10/10          initGMM [39]
-[29]     0.0    0.00    0.00      10         initGauss [29]
-                0.00    0.00      20/5520        copyOut [15]
-                0.00    0.00      10/5500        detGauss [16]
-                0.00    0.00      10/1100        inv [20]
+                0.06    0.00     100/100         getKDiagCovs [29]
+[28]     0.0    0.06    0.00     100         getKDiagCov [28]
 -----------------------------------------------
-                                5022             quickSort [30]
-                0.00    0.00       2/9           randSample [37]
-                0.00    0.00       3/9           resample [35]
-                0.00    0.00       4/9           fixComp [31]
-[30]     0.0    0.00    0.00       9+5022    quickSort [30]
-                0.00    0.00    2511/2511        partition [17]
-                                5022             quickSort [30]
+                0.00    0.06       1/1           main [1]
+[29]     0.0    0.00    0.06       1         getKDiagCovs [29]
+                0.06    0.00     100/100         getKDiagCov [28]
 -----------------------------------------------
-                0.00    0.00       4/4           train [1]
-[31]     0.0    0.00    0.00       4         fixComp [31]
-                0.00    0.00       4/9           quickSort [30]
+                0.01    0.00     332/332         EM [3]
+[30]     0.0    0.01    0.00     332         updateMix [30]
 -----------------------------------------------
-                0.00    0.00       4/4           train [1]
-[32]     0.0    0.00    0.00       4         updateTrainPop [32]
+                0.01    0.00       1/1           main [1]
+[31]     0.0    0.01    0.00       1         loadData [31]
 -----------------------------------------------
-                0.00    0.00       4/4           train [1]
-[33]     0.0    0.00    0.00       4         updateTrainResp [33]
+                0.00    0.00   16930/33860       updateMean [8]
+                0.00    0.00   16930/33860       updateCov [7]
+[32]     0.0    0.00    0.00   33860         resetArray [32]
 -----------------------------------------------
-                0.00    0.00       3/3           train [1]
-[34]     0.0    0.00    0.00       3         adjMix [34]
+                0.00    0.00     332/332         EM [3]
+[33]     0.0    0.00    0.00     332         updateCovDet [33]
 -----------------------------------------------
-                0.00    0.00       3/3           train [1]
-[35]     0.0    0.00    0.00       3         resample [35]
-                0.00    0.00       3/3           weightData [36]
-                0.00    0.00       3/9           quickSort [30]
+                0.00    0.00     332/332         EM [3]
+[34]     0.0    0.00    0.00     332         updateProbCoef [34]
 -----------------------------------------------
-                0.00    0.00       3/3           resample [35]
-[36]     0.0    0.00    0.00       3         weightData [36]
+                0.00    0.00     100/100         initGMM [41]
+[35]     0.0    0.00    0.00     100         initGauss [35]
 -----------------------------------------------
-                0.00    0.00       2/2           initGMM [39]
-[37]     0.0    0.00    0.00       2         randSample [37]
-                0.00    0.00       2/9           quickSort [30]
+                0.00    0.00       9/9           trainGMM [2]
+[36]     0.0    0.00    0.00       9         adjMix [36]
 -----------------------------------------------
-                0.00    0.00       1/1           initGMM [39]
-[38]     0.0    0.00    0.00       1         initCov [38]
+                0.00    0.00       2/2           gethrtime_x86 [38]
+[37]     0.0    0.00    0.00       2         gethrcycle_x86 [37]
 -----------------------------------------------
-                0.00    0.00       1/1           main [2]
-[39]     0.0    0.00    0.00       1         initGMM [39]
-                0.00    0.00      10/10          initGauss [29]
-                0.00    0.00       2/2           randSample [37]
-                0.00    0.00       1/1           initCov [38]
+                0.00    0.00       2/2           main [1]
+[38]     0.0    0.00    0.00       2         gethrtime_x86 [38]
+                0.00    0.00       2/2           gethrcycle_x86 [37]
+                0.00    0.00       1/1           getMHZ_x86 [39]
 -----------------------------------------------
-                0.00    0.00       1/1           main [2]
-[40]     0.0    0.00    0.00       1         loadData [40]
+                0.00    0.00       1/1           gethrtime_x86 [38]
+[39]     0.0    0.00    0.00       1         getMHZ_x86 [39]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[40]     0.0    0.00    0.00       1         getSubDataSet [40]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[41]     0.0    0.00    0.00       1         initGMM [41]
+                0.00    0.00     100/100         initGauss [35]
+-----------------------------------------------
+                0.00    0.00       1/1           trainGMM [2]
+[42]     0.0    0.00    0.00       1         printCov [42]
+-----------------------------------------------
+                0.00    0.00       1/1           trainGMM [2]
+[43]     0.0    0.00    0.00       1         printMean [43]
+-----------------------------------------------
+                0.00    0.00       1/1           trainGMM [2]
+[44]     0.0    0.00    0.00       1         printMix [44]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -349,16 +355,18 @@ index % time    self  children    called     name
 
 Index by function name
 
-   [3] EMTrain                [22] isConverge             [23] updateCovDet
-  [13] addIn                  [40] loadData               [24] updateCovInv
-  [34] adjMix                 [14] multIn                 [10] updateMean
-  [19] cof                    [11] multOut                [25] updateMix
-  [15] copyOut                [17] partition              [26] updateProbCoef
-  [16] detGauss               [30] quickSort              [27] updateSampleLike
-   [6] dot                    [37] randSample             [28] updateSamplePop
-  [31] fixComp                [35] resample                [5] updateSampleProb
-   [4] gaussProb              [18] set                     [9] updateSampleResp
-  [38] initCov                 [8] subOut                 [32] updateTrainPop
-  [39] initGMM                 [1] train                  [12] updateTrainProb
-  [29] initGauss              [21] tran                   [33] updateTrainResp
-  [20] inv                     [7] updateCov              [36] weightData
+   [3] EM                     [27] isConverge             [15] updateKMean
+  [36] adjMix                 [31] loadData               [16] updateKMeans
+  [10] assign                 [18] partition               [8] updateMean
+  [20] fixComp                [42] printCov               [30] updateMix
+   [5] gaussProb              [43] printMean              [34] updateProbCoef
+  [11] getDist                [44] printMix               [14] updateSampleLike
+  [28] getKDiagCov            [17] quickSort              [13] updateSamplePop
+  [29] getKDiagCovs           [25] randKMeans              [4] updateSampleProb
+  [39] getMHZ_x86             [26] randSample             [12] updateSampleResp
+  [40] getSubDataSet          [19] resample               [22] updateTrainPop
+  [37] gethrcycle_x86         [32] resetArray              [6] updateTrainProb
+  [38] gethrtime_x86           [2] trainGMM               [21] updateTrainResp
+  [41] initGMM                 [9] trainKmeans            [23] weightData
+  [35] initGauss               [7] updateCov
+  [24] initKmeans             [33] updateCovDet

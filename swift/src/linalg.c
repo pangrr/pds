@@ -4,6 +4,18 @@
 #include "linalg.h"
 #include "global.h"
 
+double inner (double* A, double* B, int n)
+{
+    int i;
+    double res = 0.0;
+
+    for (i = 0; i < n; i++)
+    {
+        res += A[i] * B[i];
+    }
+
+    return res;
+}
 
 
 
@@ -51,6 +63,7 @@ double* inv (double* A, int n)
 {
     int i, j, k, pivot;
     double temp;
+    double* B = copyOut (A, n, n);
 
     /* Augment the matrix with an identity matrix. */
     double* I = (double*) malloc (n*n*sizeof(double));
@@ -77,7 +90,7 @@ double* inv (double* A, int n)
         pivot = i;
         for (j = i+1; j < n; j++)
         {
-            if (A[j*n+i] > A[pivot*n+i])
+            if (B[j*n+i] > B[pivot*n+i])
             {
                 pivot = j;
             }
@@ -88,9 +101,9 @@ double* inv (double* A, int n)
         {
             for (j = 0; j < n; j++)
             {
-                temp = A[i*n+j];
-                A[i*n+j] = A[pivot*n+j];
-                A[pivot*n+j] = temp;
+                temp = B[i*n+j];
+                B[i*n+j] = B[pivot*n+j];
+                B[pivot*n+j] = temp;
                 
                 temp = I[i*n+j];
                 I[i*n+j] = I[pivot*n+j];
@@ -103,24 +116,25 @@ double* inv (double* A, int n)
         {
             if (i != j)
             {
-                temp = A[j*n+i];
+                temp = B[j*n+i];
                 for (k = 0; k < n; k++)
                 {
-                    A[j*n+k] -= A[i*n+k] / A[i*n+i] * temp;
-                    I[j*n+k] -= I[i*n+k] / A[i*n+i] * temp;
+                    B[j*n+k] -= B[i*n+k] / B[i*n+i] * temp;
+                    I[j*n+k] -= I[i*n+k] / B[i*n+i] * temp;
                 }
             }
             else
             {
-                temp = A[j*n+i];
+                temp = B[j*n+i];
                 for (k = 0; k < n; k++)
                 {
-                    A[j*n+k] /= temp;
+                    B[j*n+k] /= temp;
                     I[j*n+k] /= temp;
                 }
             }
         }
     }
+    free (B);
     return I;
 }
 
@@ -189,6 +203,7 @@ double det (double* A, int n)
     {
         deter *= B[i*n+i];
     }
+    free (B);
     return deter;
 }
 

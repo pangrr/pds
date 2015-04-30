@@ -46,6 +46,51 @@ DataSet* loadData (const char* fileName, int dim, int size)
 
 
 
+DataSet* getSubDataSet (DataSet* dataSet, int* subset, int n)
+{
+    DataSet* subDataSet = (DataSet*) malloc (sizeof(DataSet*));
+    subDataSet->dim = dataSet->dim;
+    subDataSet->size = n;
+    subDataSet->dataSet = (double**) malloc (n*sizeof(double*));
+    int i;
+    for (i = 0; i < n; i++)
+    {
+        subDataSet->dataSet[i] = dataSet->dataSet[subset[i]];
+//        for (j = 0; j < subDataSet->dim; j++)
+//        {
+//            printf ("%f ", subDataSet->dataSet[i][j]);
+//        }
+//        printf ("\n");
+    }
+    return subDataSet;
+}
+
+
+
+int* randSample (int nData, int sampleSize)
+{
+    int* randIndex = (int*) malloc (sampleSize*sizeof(int));
+    double* order = (double*) malloc (nData*sizeof(double));
+    int* index = (int*) malloc (nData*sizeof(int));
+    int i;
+
+    for (i = 0; i < nData; i++)
+    {
+        order[i] = (double)rand()/(double)RAND_MAX;
+        index[i] = i;
+    }
+
+    quickSort (index, order, 0, nData-1);
+
+    for (i = 0; i < sampleSize; i++)
+    {
+        randIndex[i] = index[i];
+    }
+
+    free (order);
+    free (index);
+    return randIndex;
+}
 
 
 
