@@ -77,7 +77,7 @@ void assign (Kmeans* kmeans)
     int dim = kmeans->trainData->dim;
     int clust;
 
-    #pragma omp parallel for private(i, clust, j, dist, minDist)
+//    #pragma omp parallel for private(i, clust, j, dist, minDist)
     for (i = 0; i < trainSize; i++)
     {
         clust = 0;
@@ -123,7 +123,7 @@ int updateKMean (Kmeans* kmeans, int i)
 
     double* mean = (double*) malloc (dim*sizeof(double));
     pop = 0;
-
+    
     for (j = 0; j < trainSize; j++)
     {
         if (r[j*nComp+i] == 1)
@@ -142,7 +142,6 @@ int updateKMean (Kmeans* kmeans, int i)
     double* oldMean = kmeans->means[i];
     kmeans->means[i] = mean;
 
-    //printf ("%f ", getDist(mean, oldMean, dim));
     if (getDist(mean, oldMean, dim) < kmeans->eps)
     {
         isConv = 1;
@@ -151,6 +150,7 @@ int updateKMean (Kmeans* kmeans, int i)
     free (oldMean);
     return isConv;
 }
+
 
 
 
@@ -167,6 +167,7 @@ int updateKMeans (Kmeans* kmeans)
     {
         nConv += updateKMean (kmeans, i);
     }
+
     return nConv;
 }
 
@@ -181,7 +182,8 @@ double** getKDiagCovs (Kmeans* kmeans)
 {
     int i;
     double** covs = (double**) malloc (kmeans->nComp*sizeof(double*));
-
+    
+//    #pragma omp parallel for private (i)
     for (i = 0; i < kmeans->nComp; i++)
     {
         covs[i] = getKDiagCov (kmeans, i);
@@ -257,6 +259,7 @@ double** randKMeans (Kmeans* kmeans, int nComp)
     int* index = (int*) malloc (trainSize*sizeof(int));
     int dim = kmeans->trainData->dim;
     int i, j;
+    double* mean;
 
     for (i = 0; i < trainSize; i++)
     {
@@ -264,11 +267,12 @@ double** randKMeans (Kmeans* kmeans, int nComp)
         index[i] = i;
     }
 
-    quickSort (index, order, 0, trainSize-1);
+    quickSortDouble (index, order, 0, trainSize-1);
 
+//    #pragma omp parallel for private(i, mean, j)
     for (i = 0; i < nComp; i++)
     {
-        double* mean = (double*) malloc (dim*sizeof(double));
+        mean = (double*) malloc (dim*sizeof(double));
         for (j = 0; j < dim; j++)
         {
             mean[j] = dataSet[index[i]][j];

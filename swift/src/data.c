@@ -73,19 +73,21 @@ int* randSample (int nData, int sampleSize)
     double* order = (double*) malloc (nData*sizeof(double));
     int* index = (int*) malloc (nData*sizeof(int));
     int i;
-
+    
     for (i = 0; i < nData; i++)
     {
         order[i] = (double)rand()/(double)RAND_MAX;
         index[i] = i;
     }
 
-    quickSort (index, order, 0, nData-1);
+    quickSortDouble (index, order, 0, nData-1);
 
     for (i = 0; i < sampleSize; i++)
     {
         randIndex[i] = index[i];
     }
+
+    quickSortInt (index, randIndex, 0, sampleSize-1);
 
     free (order);
     free (index);

@@ -6,6 +6,7 @@
 #include "linalg.h"
 #include "data.h"
 #include "sort.h"
+#include "search.h"
 
 int main (int argc, char** argv)
 {
@@ -14,33 +15,23 @@ int main (int argc, char** argv)
     int dim = 10;
     int nComp = 100;
     int fixRate = 10;
-    double kmEps = 1e-6;
+    double kmEps = 1e-4;
     double gmmEps = 1e-1;
     int gmmIt = 50;
     int kmIt = 1000;
     double begin, end;
+    begin = gethrtime_x86();
 
     DataSet* trainData = loadData ("../data/10x100k", dim, nData);
     int* sample = randSample (nData, sampleSize);
     DataSet* sampleData = getSubDataSet (trainData, sample, sampleSize);
-//    int i, j;
-//    for (i = 0; i < sampleSize; i++)
-//    {
-//        for (j = 0; j < dim; j++)
-//        {
-//            printf ("%f ", sampleDataSet->dataSet[i][j]);
-//        }
-//        printf ("\n");
-//    }
-//    return 0;
+    
     Kmeans* kmeans = initKmeans (sampleData, nComp, kmIt, kmEps);
     trainKmeans (kmeans);
     
     double** covs = getKDiagCovs (kmeans);
     double** means = kmeans->means;
     
-    begin = gethrtime_x86();
-
     GMM* gmm = initGMM (trainData, sample, sampleSize, means, covs, nComp, fixRate, gmmIt, gmmEps);
     trainGMM (gmm);
 
@@ -52,10 +43,15 @@ int main (int argc, char** argv)
 
 
 
-//    int index[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-//    double order[9] = {1.0, 5.0, 3.0, 1.0, 3.0, 2.0, 2.0, 4.0, -6.0};
-//    double* inverse = inv (order, 3);
-//    quickSort (index, order, 0, 8);
-//    printDoubleArray (inverse, 3, 3);
-//    printIntArray (index, 1, 9);
+ //   int index[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+//    printf ("%d\n", biSearch(3, index, 0, 8));
+//    printf ("%d\n", biSearch(4, index, 0, 8));
+//    printf ("%d\n", biSearch(10, index, 0, 8));
+//    printf ("%d\n", biSearch(15, index, 0, 8));
+
+//    int order[9] = {1, 5, 3, 1, 3, 2, 2, 4, -6};
+//    quickSortInt (index, order, 0, 8);
+//    int j;
+//    for (j = 0; j < 9; j++)
+//        printf ("%d ", index[j]);
 }

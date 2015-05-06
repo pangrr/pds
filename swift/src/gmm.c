@@ -4,7 +4,7 @@
 #include "sort.h"
 #include "global.h"
 #include "data.h"
-
+#include "search.h"
 
 
 
@@ -75,44 +75,6 @@ Gauss* initGauss (int dim, double* mean, double* cov, double mix)
 
 
 
-
-
-
-
-
-int trainGMM (GMM* gmm)
-{
-    EM (gmm);
-
-    updateTrainProb (gmm);
-    updateTrainResp (gmm);
-    updateTrainPop (gmm);
-    
-    while (1)
-    {
-        fixComp (gmm);
-        printf ("\t%d fixed\n", gmm->nFixed);
-        if (gmm->nFixed == gmm->nComp)
-        {
-            break;
-        }
-        
-        resample (gmm);
-        
-        EM (gmm);
-        
-        adjMix (gmm);
-
-        updateTrainProb (gmm);
-        updateTrainResp (gmm);
-        updateTrainPop (gmm);
-    }
-
-    printMix (gmm);
-    printCov (gmm);
-    printMean (gmm);
-    return 0;
-}
 
 
 
@@ -203,13 +165,14 @@ void resample (GMM* gmm)
     
     weightData (gmm);
     
+//    #pragma omp parallel for private(i)
     for (i = 0; i < trainSize; i++)
     {
         order[i] = pow ((double)rand()/(double)RAND_MAX, 1.0/weight[i]);
         index[i] = i;
     }
 
-    quickSort (index, order, 0, sampleSize-1);
+    quickSortDouble (index, order, 0, trainSize-1);
 
     for (i = 0; i < sampleSize; i++)
     {
@@ -217,7 +180,9 @@ void resample (GMM* gmm)
     }
 
     free (order);
-    free (index);    
+
+    quickSortInt (index, sample, 0, sampleSize-1);
+    free(index);
 }
 
 
@@ -236,6 +201,7 @@ void weightData (GMM* gmm)
     double w;
     int i, j;
 
+//    #pragma omp parallel for private(i, w, j, gauss)
     for (i = 0; i < dataSize; i++)
     {
         w = 0.0;
@@ -287,7 +253,7 @@ int fixComp (GMM* gmm)
         }
     }
     /* Sort unfixed components according to their population. */
-    quickSort (index, order, 0, nUnfixed-1);
+    quickSortDouble (index, order, 0, nUnfixed-1);
 
     /* Try to fix some components with higher order. */
     i = 0;
@@ -348,6 +314,44 @@ void adjMix (GMM* gmm)
         }
     }
 }
+
+
+
+int trainGMM (GMM* gmm)
+{
+    EM (gmm);
+
+    updateTrainProb (gmm);
+    updateTrainResp (gmm);
+    updateTrainPop (gmm);
+    
+    while (1)
+    {
+        fixComp (gmm);
+        printf ("\t%d fixed\n", gmm->nFixed);
+        if (gmm->nFixed == gmm->nComp)
+        {
+            break;
+        }
+        
+        resample (gmm);
+        
+        EM (gmm);
+        
+        adjMix (gmm);
+
+        updateTrainProb (gmm);
+        updateTrainResp (gmm);
+        updateTrainPop (gmm);
+    }
+
+    printMix (gmm);
+    printCov (gmm);
+    printMean (gmm);
+    return 0;
+}
+
+
 
 
 
@@ -438,9 +442,6 @@ double gaussProb (Gauss* gauss, double* dataPoint)
         sum += sub*sub / cov[i];
     }
     
-//    printf ("%f\n", sum);
-//    exit(0);
-
     double prob = exp(-0.5*sum) / gauss->probCoef;
     
     if (prob < 1e-36)
@@ -490,23 +491,12 @@ void updateTrainProb (GMM* gmm)
     double* dataPoint;
     Gauss** comp = gmm->comp;
     Gauss* gauss;
-    int i, j, k;
-    int inSample;
+    int i, j;
     
-    #pragma omp parallel for private(i, inSample, k, dataPoint, j, gauss, )
+//    #pragma omp parallel for private(i, dataPoint, j, gauss)
     for (i = 0; i < trainSize; i++)
-    {
-        inSample = 0;
-        for (k = 0; k < sampleSize; k++)
-        {
-            if (i == sample[k])
-            {
-                inSample = 1;
-                break;
-            }
-        }
-
-        if (inSample == 0)
+    { 
+        if (biSearch (i, sample, 0, sampleSize-1) == -1)
         {
             dataPoint = trainDataSet[i];
             for (j = 0; j < nComp; j++)
@@ -538,7 +528,7 @@ void updateSampleProb (GMM* gmm)
     Gauss* gauss;
     int i, j, dataPointIndex;
     
-    #pragma omp parallel for private(i, dataPointIndex, dataPoint, j, gauss)
+//    #pragma omp parallel for private(i, dataPointIndex, dataPoint, j, gauss)
     for (i = 0; i < sampleSize; i++)
     {
         dataPointIndex = sample[i];
@@ -568,7 +558,7 @@ void updateTrainResp (GMM* gmm)
     int i, j;
     double sumProb;
 
-    
+//    #pragma omp parallel for private(i, sumProb, j)
     for (i = 0; i < dataSize; i++)
     {
         sumProb = 0.0;
@@ -600,6 +590,7 @@ void updateSampleResp (GMM* gmm)
     double sumProb;
     double* prob = gmm->prob;
 
+//    #pragma omp parallel for private(i, dataPointIndex, sumProb, j)
     for (i = 0; i < sampleSize; i++)
     {
         dataPointIndex = sample[i];
@@ -656,6 +647,7 @@ void updateCovDet (GMM* gmm)
     int dim = gmm->dim;
     int i, j;
 
+//    #pragma omp parallel for private(i, gauss, j)
     for (i = 0; i < gmm->nComp; i++)
     {
         gauss = gmm->comp[i];
@@ -759,6 +751,7 @@ void updateSamplePop (GMM* gmm)
     int* sample = gmm->sample;
     int i, j;
     
+//    #pragma omp parallel for private(i, gauss, pop, j)
     for (i = 0; i < nComp; i++)
     {
         gauss = comp[i];
@@ -790,6 +783,7 @@ void updateTrainPop (GMM* gmm)
     int dataSize = gmm->trainData->size;
     int i, j;
     
+//    #pragma omp parallel for private(i, gauss, pop, j)
     for (i = 0; i < nComp; i++)
     {
         gauss = comp[i];
@@ -825,7 +819,7 @@ void updateMean (GMM* gmm)
     int* sample = gmm->sample;
     int i, j, k;
 
-    #pragma omp parallel for private(i, gauss, mean, j, dataPoint, resp, k)
+//    #pragma omp parallel for private(i, gauss, mean, j, dataPoint, resp, k)
     for (i = 0; i < nComp; i++)
     {
         gauss = gmm->comp[i];
@@ -883,7 +877,7 @@ void updateCov (GMM* gmm)
     double sub, resp;
     double* mean;
     
-    #pragma omp parallel for private(i, gauss, mean, cov, j, dataPoint, resp, k, sub)
+//    #pragma omp parallel for private(i, gauss, mean, cov, j, dataPoint, resp, k, sub)
     for (i = 0; i < nComp; i++)
     {
         gauss = gmm->comp[i];
